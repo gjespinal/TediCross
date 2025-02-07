@@ -165,20 +165,10 @@ export function setup(
 			return;
 		}
 
-		// Get info about the sender
-		const senderName = R.compose<any, any>(
-			// Make it HTML safe
-			escapeHTMLSpecialChars,
-			// Add a colon if wanted
-			//@ts-ignore
-			R.when(R.always(settings.telegram.colonAfterSenderName), senderName => senderName + ":"),
-			// Figure out what name to use
-			R.ifElse(
-				message => useNickname && !R.isNil(message.member),
-				R.path(["member", "displayName"]),
-				R.path(["author", "username"])
-			)
-		)(message) as string;
+			const senderName = escapeHTMLSpecialChars(
+			message.member?.displayName || message.author.username
+		);
+
 
 		// Check if the message is from the correct chat
 		const bridges = bridgeMap.fromDiscordChannelId(Number(message.channel.id));
