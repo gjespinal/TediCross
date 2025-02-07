@@ -728,7 +728,7 @@ export default {
 	removeBridgesIgnoringCommands,
 	removeBridgesIgnoringJoinMessages,
 	removeBridgesIgnoringLeaveMessages,
-	informThisIsPrivateBot,
+	/*informThisIsPrivateBot,*/
 	addFromObj,
 	addReplyObj,
 	addForwardFrom,
