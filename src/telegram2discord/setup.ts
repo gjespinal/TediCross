@@ -167,7 +167,7 @@ export function setup(
 			tgBot.use(middlewares.addMessageObj);
 			tgBot.use(middlewares.addMessageId);
 			tgBot.use(middlewares.addBridgesToContext);
-			tgBot.use(middlewares.informThisIsPrivateBot);
+			/*tgBot.use(middlewares.informThisIsPrivateBot);*/
 			tgBot.use(middlewares.removeD2TBridges);
 			//@ts-ignore telegram expacts a second parameter
 			//tgBot.command(middlewares.removeBridgesIgnoringCommands);
