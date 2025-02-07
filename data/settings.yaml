@@ -24,13 +24,11 @@ discord:
 bridges:
   - name: "Crypto smart"
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
-    threadMap:  # 🔹 Se usa `threadMap` para especificar el tópico exacto
-      - name: "Noticias"
-        telegram: 86  # ✅ ID del tópico en Telegram
-        discord: '1337291310738178110'  # ✅ ID del canal en Discord (debe ir entre comillas)
+    threadMap:
+      - telegram: 86  # ✅ Solo este tópico en Telegram
+        discord: '1337291310738178110'  # ✅ Canal/thread en Discord
     telegram:
-      chatId: "-1002479265586"  # ✅ ID del grupo de Telegram (debe incluir el `-`)
-      threadId: 86  # ✅ ID del tópico "Noticias"
+      chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
@@ -43,6 +41,7 @@ bridges:
       crossDeleteOnTelegram: true
       disableWebPreviewOnTelegram: false
       useEmbeds: "auto"
+
 
 debug: true  # Activa logs para verificar si el `threadMap` funciona
 messageTimeoutAmount: 24
