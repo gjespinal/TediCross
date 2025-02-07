@@ -30,6 +30,7 @@ bridges:
         discord: '1332314270318460969'  # ✅ ID del canal en Discord (debe ir entre comillas)
     telegram:
       chatId: "-1002479265586"  # ✅ ID del grupo de Telegram (debe incluir el `-`)
+      threadId: 86  # ✅ ID del tópico "Noticias"
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
