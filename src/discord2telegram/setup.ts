@@ -166,7 +166,7 @@ export function setup(
 		}
 			// get username from discord to telegram
 			const senderName = escapeHTMLSpecialChars(
-			(message.member?.displayName || message.author.username) + "desde Discord"
+			(message.member?.displayName || message.author.username) + " - desde Discord"
 			
 		);
 
