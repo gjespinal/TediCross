@@ -26,6 +26,7 @@ bridges:
     direction: both
     telegram:
       chatId: "-1002479265586"  # ID del grupo general
+      threadId: "86"
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: false
