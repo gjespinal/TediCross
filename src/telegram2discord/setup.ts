@@ -211,7 +211,7 @@ export function setup(
 			});
 
 
-			tgBot.use(relayMessage as any);
+			/*tgBot.use(relayMessage as any);*/
 
 			// Don't crash on errors
 			tgBot.catch((err: any) => {
