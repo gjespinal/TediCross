@@ -560,7 +560,9 @@ async function addPreparedObj(ctx: TediCrossContext, next: () => void) {
 			}
 
 			// Get the name of the sender of this message
-			const senderName = makeDisplayName(ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername, tc.from);
+			// const senderName = makeDisplayName(ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername, tc.from);
+			const senderName = tc.from.displayName || tc.from.username;
+
 
 			// Make the header
 			// WARNING! Butt-ugly code! If you see a nice way to clean this up, please do it
