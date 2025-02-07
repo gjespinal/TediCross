@@ -469,6 +469,7 @@ function addFileObj(ctx: TediCrossContext, next: () => void) {
  *
  * @returns Promise resolving to nothing when the operation is complete
  */
+
 function addFileLink(ctx: TediCrossContext, next: () => void) {
 	return Promise.resolve()
 		.then(() => {
@@ -487,26 +488,31 @@ function addFileLink(ctx: TediCrossContext, next: () => void) {
 		.catch(err => {
 			if (ctx.TediCross.settings.telegram.suppressFileTooBigMessages) {
 				console.log(err.response ? err.response.description : "Bad Request");
-			} else if (err.response && err.response.description === "Bad Request: file is too big") 
-			
-			{
-				
-				
-				async function addPreparedObj(ctx: TediCrossContext, next: () => void) {
-				// Shorthand para el contexto de TediCross
-				const tc = ctx.tediCross;
-			
-				ctx.tediCross.prepared = await Promise.all(
-					R.map(async (bridge: Bridge) => {
-						// Esperar que el bot de Discord esté listo
-						await ctx.TediCross.dcBot.ready;
-			
-						// Obtener el canal de Discord donde se enviará el mensaje
-						const channel = await fetchDiscordChannel(
-							ctx.TediCross.dcBot,
-							bridge,
-							ctx.tediCross.message?.message_thread_id
-						);
+			} else if (err.response && err.response.description === "Bad Request: file is too big") {
+				ctx.reply(`<i>File '${ctx.tediCross.file.name}' is too big for TediCross to handle</i>`, {
+					parse_mode: "HTML"
+				}).then();
+			}
+
+			next();
+		});
+}
+
+async function addPreparedObj(ctx: TediCrossContext, next: () => void) {
+	// Shorthand para el contexto de TediCross
+	const tc = ctx.tediCross;
+
+	ctx.tediCross.prepared = await Promise.all(
+		R.map(async (bridge: Bridge) => {
+			// Esperar que el bot de Discord esté listo
+			await ctx.TediCross.dcBot.ready;
+
+			// Obtener el canal de Discord donde se enviará el mensaje
+			const channel = await fetchDiscordChannel(
+				ctx.TediCross.dcBot,
+				bridge,
+				ctx.tediCross.message?.message_thread_id
+			);
 
 			// Obtener el nombre del remitente
 			const senderName = makeDisplayName(ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername, tc.from);
@@ -578,15 +584,6 @@ ${tc.text.raw}
 	);
 
 	next();
-}
-
-				ctx.reply(`<i>File '${ctx.tediCross.file.name}' is too big for TediCross to handle</i>`, {
-					parse_mode: "HTML"
-				}).then();
-			}
-
-			next();
-		});
 }
 
 
