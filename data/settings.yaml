@@ -22,7 +22,7 @@ discord:
   customStatusMessage: "TediCross"
 
 bridges:
-  - name: "Noticias"
+  - name: "Crypto smart"
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:  # 🔹 Se usa `threadMap` para especificar el tópico exacto
       - name: "Noticias"
@@ -34,13 +34,13 @@ bridges:
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
-      crossDeleteOnDiscord: false
+      crossDeleteOnDiscord: true
     discord:
       channelId: '1332314270318460969'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
-      crossDeleteOnTelegram: false
+      crossDeleteOnTelegram: true
       disableWebPreviewOnTelegram: false
       useEmbeds: "auto"
 
