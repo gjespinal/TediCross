@@ -25,7 +25,7 @@ bridges:
   - name: "Crypto smart"
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:
-      - telegram: 86  # ✅ Solo este tópico en Telegram
+      - telegram: 9167  # ✅ Solo este tópico en Telegram
         discord: '1337291310738178110'  # ✅ Canal/thread en Discord
     telegram:
       chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
