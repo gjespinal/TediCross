@@ -1,5 +1,5 @@
 telegram:
-  token: "${TELEGRAM_BOT_TOKEN}"
+  token: "env"
   useFirstNameInsteadOfUsername: false
   colonAfterSenderName: false
   skipOldMessages: true
@@ -12,7 +12,7 @@ telegram:
   suppressThisIsPrivateBotMessage: false
 
 discord:
-  token: "${DISCORD_BOT_TOKEN}"
+  token: "env"
   useNickname: false
   skipOldMessages: true
   replyLength: 100
