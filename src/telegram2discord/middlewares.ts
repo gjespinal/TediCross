@@ -487,7 +487,94 @@ function addFileLink(ctx: TediCrossContext, next: () => void) {
 		.catch(err => {
 			if (ctx.TediCross.settings.telegram.suppressFileTooBigMessages) {
 				console.log(err.response ? err.response.description : "Bad Request");
-			} else if (err.response && err.response.description === "Bad Request: file is too big") {
+			} else if (err.response && err.response.description === "Bad Request: file is too big") {async function addPreparedObj(ctx: TediCrossContext, next: () => void) {
+	// Shorthand para el contexto de TediCross
+	const tc = ctx.tediCross;
+
+	ctx.tediCross.prepared = await Promise.all(
+		R.map(async (bridge: Bridge) => {
+			// Esperar que el bot de Discord esté listo
+			await ctx.TediCross.dcBot.ready;
+
+			// Obtener el canal de Discord donde se enviará el mensaje
+			const channel = await fetchDiscordChannel(
+				ctx.TediCross.dcBot,
+				bridge,
+				ctx.tediCross.message?.message_thread_id
+			);
+
+			// Obtener el nombre del remitente
+			const senderName = makeDisplayName(ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername, tc.from);
+
+			// Verificar si el mensaje es una respuesta a otro
+			let replyId = "0";
+			let messageToReply: any;
+			const messageReference = ctx.tediCross.message?.reply_to_message;
+
+			if (messageReference) {
+				const referenceId = messageReference?.message_id;
+				if (referenceId) {
+					[replyId] = await ctx.TediCross.messageMap.getCorrespondingReverse(
+						MessageMap.DISCORD_TO_TELEGRAM,
+						bridge,
+						referenceId as string
+					);
+
+					if (replyId === undefined) {
+						[replyId] = await ctx.TediCross.messageMap.getCorresponding(
+							MessageMap.TELEGRAM_TO_DISCORD,
+							bridge,
+							referenceId as string
+						);
+					}
+				}
+			}
+
+			if (replyId !== "0" && replyId !== undefined) {
+				messageToReply = await channel.messages.fetch(replyId).catch(() => undefined);
+			}
+
+			if (messageToReply) {
+				ctx.tediCross.hasActualReference = true;
+			}
+
+			// Crear encabezado con Markdown
+			const header = `📢 **Mensaje desde Telegram**`;
+			const senderFormatted = `👤 **${senderName}**`;
+
+			// Formatear el texto del mensaje con Markdown
+			const formattedMessage = `---
+${header}
+
+${senderFormatted}:
+\`\`\`
+${tc.text.raw}
+\`\`\`
+📅 _${new Date().toLocaleString()}_
+---
+`;
+
+			// Enviar el mensaje a Discord
+			if (messageToReply) {
+				channel.send({ content: formattedMessage, reply: { messageReference: messageToReply } });
+			} else {
+				channel.send(formattedMessage);
+			}
+
+			return {
+				bridge,
+				header,
+				senderName,
+				text: formattedMessage,
+				messageToReply,
+				replyId
+			};
+		}, tc.bridges)
+	);
+
+	next();
+}
+
 				ctx.reply(`<i>File '${ctx.tediCross.file.name}' is too big for TediCross to handle</i>`, {
 					parse_mode: "HTML"
 				}).then();
@@ -497,181 +584,7 @@ function addFileLink(ctx: TediCrossContext, next: () => void) {
 		});
 }
 
-async function addPreparedObj(ctx: TediCrossContext, next: () => void) {
-	// Shorthand for the tediCross context
-	const tc = ctx.tediCross;
 
-	ctx.tediCross.prepared = await Promise.all(
-		R.map(async (bridge: Bridge) => {
-			// Wait for the Discord bot to become ready
-			await ctx.TediCross.dcBot.ready;
-
-			// Get the channel to send to
-			const channel = await fetchDiscordChannel(
-				ctx.TediCross.dcBot,
-				bridge,
-				ctx.tediCross.message?.message_thread_id
-			);
-
-			// Check if the message is a reply and get the id of that message on Discord
-			let replyId = "0";
-			const messageReference = ctx.tediCross.message?.message_thread_id
-				? ctx.tediCross.message?.message_thread_id !== ctx.tediCross.message?.reply_to_message?.message_id
-					? ctx.tediCross.message?.reply_to_message
-					: ctx.tediCross.message?.reply_to_message?.message_thread_id
-					? undefined
-					: ctx.tediCross.message?.reply_to_message
-				: ctx.tediCross.message?.reply_to_message;
-
-			if (typeof messageReference !== "undefined") {
-				const referenceId = messageReference?.message_id;
-				if (typeof referenceId !== "undefined") {
-					//console.log("==== telegram2discord reply ====");
-					//console.log("referenceId: " + referenceId);
-					//console.log("bridge.name: " + bridge.name);
-					[replyId] = await ctx.TediCross.messageMap.getCorrespondingReverse(
-						MessageMap.DISCORD_TO_TELEGRAM,
-						bridge,
-						referenceId as string
-					);
-					//console.log("d2t replyId: " + replyId);
-					if (replyId === undefined) {
-						[replyId] = await ctx.TediCross.messageMap.getCorresponding(
-							MessageMap.TELEGRAM_TO_DISCORD,
-							bridge,
-							referenceId as string
-						);
-						//console.log("t2d replyId: " + replyId);
-					}
-				}
-			}
-
-			let messageToReply: any;
-
-			if (replyId !== "0" && replyId !== undefined) {
-				messageToReply = await channel.messages.fetch(replyId).catch((err: Error) => {
-					`Could not find Message ${replyId} in Discord Channel ${channel.id} on bridge ${bridge.name}: ${err.message}`;
-				});
-			}
-
-			if (messageToReply !== undefined) {
-				ctx.tediCross.hasActualReference = true;
-			}
-
-			// Get the name of the sender of this message
-			const senderName = makeDisplayName(ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername, tc.from);
-
-			// Make the header
-			// WARNING! Butt-ugly code! If you see a nice way to clean this up, please do it
-			const header = await (async () => {
-				// Get the name of the original sender, if this is a forward
-				const originalSender = R.isNil(tc.forwardFrom)
-					? null
-					: makeDisplayName(ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername, tc.forwardFrom);
-				// Get the name of the replied-to user, if this is a reply
-				const repliedToName = R.isNil(tc.replyTo)
-					? null
-					: await R.ifElse(
-							R.prop("isReplyToTediCross") as any,
-							R.compose(
-								(username: string) => makeDiscordMention(username, ctx.TediCross.dcBot, bridge),
-								R.prop("dcUsername") as any
-							),
-							R.compose(
-								R.partial(makeDisplayName, [
-									ctx.TediCross.settings.telegram.useFirstNameInsteadOfUsername
-								]),
-								//@ts-ignore
-								R.prop("originalFrom")
-							)
-					  )(tc.replyTo);
-				// Build the header
-				let header: string;
-				if (bridge.telegram.sendUsernames) {
-					if (!R.isNil(tc.forwardFrom)) {
-						// Forward
-						header = `**${originalSender}** (forwarded by **${senderName}**)`;
-					} else if (tc.hasActualReference) {
-						header = `**${senderName}**`;
-					} else if (!R.isNil(tc.replyTo)) {
-						// Reply
-						header = `**${senderName}** (in reply to **${repliedToName}**)`;
-					} else {
-						// Ordinary message
-						header = `**${senderName}**`;
-					}
-				} else {
-					if (!R.isNil(tc.forwardFrom)) {
-						// Forward
-						header = `(forward from **${originalSender}**)`;
-					} else if (tc.hasActualReference) {
-						header = ``;
-					} else if (!R.isNil(tc.replyTo)) {
-						// Reply
-						header = `(in reply to **${repliedToName}**)`;
-					} else {
-						// Ordinary message
-						header = "";
-					}
-				}
-
-				return header;
-			})();
-
-			// Handle blockquote replies
-			const replyQuote = R.ifElse(
-				tc => !R.isNil(tc.replyTo),
-				//@ts-ignore
-				R.compose<any, any>(R.replace(/^/gm, "> "), tc =>
-					makeReplyText(
-						tc.replyTo,
-						ctx.TediCross.settings.discord.replyLength,
-						ctx.TediCross.settings.discord.maxReplyLines
-					)
-				),
-				R.always(undefined)
-			)(tc);
-
-			// Handle file
-			const file = R.ifElse(
-				R.compose(R.isNil, R.prop("file")),
-				R.always(undefined),
-				(tc: TediCrossContext["TediCross"]["tc"]) =>
-					new Discord.AttachmentBuilder(tc.file.link, { name: tc.file.name, description: tc.file.type })
-			)(tc);
-
-			// Make the text to send
-			const [text, hasLinks] = await (async () => {
-				const [text, hasLinks] = await handleEntities(
-					tc.text.raw,
-					tc.text.entities,
-					ctx.TediCross.dcBot,
-					bridge
-				);
-				let editableText = text;
-
-				if (!R.isNil(replyQuote) && !tc.hasActualReference) {
-					editableText = replyQuote + "\n" + editableText;
-				}
-
-				return [editableText, hasLinks];
-			})();
-
-			return {
-				bridge,
-				header,
-				senderName,
-				file,
-				text,
-				messageToReply,
-				replyId,
-				hasLinks
-			};
-		}, tc.bridges)
-	);
-
-	next();
-}
 
 /***************
  * Export them *
