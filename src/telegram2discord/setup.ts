@@ -200,7 +200,7 @@ export function setup(
 			        return;
 			    }
 			
-			    if (message.message_thread_id !== 9167) {
+			    if (message.message_thread_id !== 4) {
 			        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos 9167`);
 			        return;
 			    }
