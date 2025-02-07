@@ -185,24 +185,31 @@ export function setup(
 
 			// Apply endwares
 			tgBot.on(["edited_message", "edited_channel_post"], handleEdits);
+			
 			// Filtrar mensajes que no son del thread correcto (86)
 			tgBot.use((ctx: TediCrossContext, next: () => void) => {
 			    const message = ctx.tediCross?.message;
-			    
+			
 			    if (!message) {
-				console.log("⚠️ Mensaje sin contenido, ignorando.");
-				return;
+			        console.log("⚠️ Mensaje sin contenido, ignorando.");
+			        return;
 			    }
 			
-			    // Verificar si el mensaje tiene un message_thread_id
-			    if (message.message_thread_id && message.message_thread_id !== 86) {
-				console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos 86`);
-				return;
+			    // Verificar si el mensaje viene del tema correcto
+			    if (!message.message_thread_id) {
+			        console.log("❌ Ignorando mensaje del canal general (sin tópico).");
+			        return;
+			    }
+			
+			    if (message.message_thread_id !== 86) {
+			        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos 86`);
+			        return;
 			    }
 			
 			    console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
 			    return next();
 			});
+
 
 			tgBot.use(relayMessage as any);
 
