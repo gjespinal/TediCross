@@ -29,13 +29,13 @@ bridges:
       threadId: "86"
       relayJoinMessages: false
       relayLeaveMessages: false
-      sendUsernames: false
+      sendUsernames: true
       crossDeleteOnDiscord: false
     discord:
       channelId: "1332314270318460969"
       relayJoinMessages: false
       relayLeaveMessages: false
-      sendUsernames: false
+      sendUsernames: true
       crossDeleteOnTelegram: false
       disableWebPreviewOnTelegram: false
       useEmbeds: "auto"
