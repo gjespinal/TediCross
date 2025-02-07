@@ -166,7 +166,7 @@ export function setup(
 		}
 			// get username from discord to telegram
 			const senderName = escapeHTMLSpecialChars(
-			(message.member?.displayName || message.author.username) + " (desde Discord)"
+			(message.member?.displayName || message.author.username) + "desde Discord"
 			
 		);
 
@@ -243,7 +243,8 @@ export function setup(
 							link_preview_options: {
 								is_disabled: bridge.discord.disableWebPreviewOnTelegram
 							},
-							message_thread_id: bridge.tgThread
+							message_thread_id: bridge.tgThread,
+							disable_notification: false
 						});
 						messageMap.insert(
 							MessageMap.DISCORD_TO_TELEGRAM,
