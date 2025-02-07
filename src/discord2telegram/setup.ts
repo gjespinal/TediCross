@@ -164,9 +164,10 @@ export function setup(
 		if (message.author.id === dcBot.user?.id) {
 			return;
 		}
-
+			// get username from discord to telegram
 			const senderName = escapeHTMLSpecialChars(
-			message.member?.displayName || message.author.username
+			(message.member?.displayName || message.author.username) + " (desde Discord)"
+			
 		);
 
 
