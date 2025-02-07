@@ -185,6 +185,22 @@ export function setup(
 
 			// Apply endwares
 			tgBot.on(["edited_message", "edited_channel_post"], handleEdits);
+			// Filtrar mensajes que no son del thread correcto (86)
+			tgBot.use((ctx, next) => {
+			    // Verifica si el mensaje tiene un thread_id
+			    if (ctx.tediCross.message?.message_thread_id) {
+			        if (ctx.tediCross.message.message_thread_id !== 86) {
+			            console.log(`📢 Ignorando mensaje del tópico ${ctx.tediCross.message.message_thread_id}, solo permitimos 86`);
+			            return;  // No pasa el mensaje a Discord si no es del tópico correcto
+			        }
+			    } else {
+			        console.log(`📢 Ignorando mensaje sin thread_id, solo permitimos mensajes en el tópico 86`);
+			        return;
+			    }
+			
+			    return next();
+			});
+
 			tgBot.use(relayMessage as any);
 
 			// Don't crash on errors
