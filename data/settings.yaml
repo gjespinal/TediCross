@@ -26,7 +26,7 @@ bridges:
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:  # 🔹 Se usa `threadMap` para especificar el tópico exacto
       - name: "Noticias"
-        telegram: 5373251851074415873  # ✅ ID del tópico en Telegram
+        telegram: 86  # ✅ ID del tópico en Telegram
         discord: '1332314270318460969'  # ✅ ID del canal en Discord (debe ir entre comillas)
     telegram:
       chatId: "-1002479265586"  # ✅ ID del grupo de Telegram (debe incluir el `-`)
