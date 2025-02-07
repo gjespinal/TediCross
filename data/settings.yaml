@@ -27,7 +27,7 @@ bridges:
     threadMap:  # 🔹 Se usa `threadMap` para especificar el tópico exacto
       - name: "Noticias"
         telegram: 86  # ✅ ID del tópico en Telegram
-        discord: '1332314270318460969'  # ✅ ID del canal en Discord (debe ir entre comillas)
+        discord: '1337291310738178110'  # ✅ ID del canal en Discord (debe ir entre comillas)
     telegram:
       chatId: "-1002479265586"  # ✅ ID del grupo de Telegram (debe incluir el `-`)
       threadId: 86  # ✅ ID del tópico "Noticias"
@@ -36,7 +36,7 @@ bridges:
       sendUsernames: true
       crossDeleteOnDiscord: true
     discord:
-      channelId: '1332314270318460969'  # ✅ Debe estar en comillas
+      channelId: '1337291310738178110'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
