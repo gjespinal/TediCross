@@ -9,7 +9,7 @@ telegram:
   replaceExcessiveSpaces: false
   removeNewlineSpaces: false
   suppressFileTooBigMessages: false
-  suppressThisIsPrivateBotMessage: false
+  suppressThisIsPrivateBotMessage: true
 
 discord:
   token: "env"  # Se usa `env` para leer la variable en Railway
