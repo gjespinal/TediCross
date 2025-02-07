@@ -276,7 +276,7 @@ function removeBridgesIgnoringLeaveMessages(ctx: TediCrossContext, next: () => v
  * @param ctx.reply The context's reply function
  * @param next Function to pass control to next middleware
  */
-function informThisIsPrivateBot(ctx: TediCrossContext, next: () => void) {
+/*function informThisIsPrivateBot(ctx: TediCrossContext, next: () => void) {
 	R.ifElse(
 		// If there are no bridges
 		//@ts-ignore
@@ -318,7 +318,7 @@ function informThisIsPrivateBot(ctx: TediCrossContext, next: () => void) {
 		// Otherwise go to next middleware
 		next
 	)(ctx);
-}
+}*/
 
 /**
  * Adds a `from` object to the tediCross context
