@@ -1,5 +1,5 @@
 telegram:
-  token: "env"
+  token: "env"  # Se usa `env` para que lea la variable de entorno de Railway
   useFirstNameInsteadOfUsername: false
   colonAfterSenderName: false
   skipOldMessages: true
@@ -12,7 +12,7 @@ telegram:
   suppressThisIsPrivateBotMessage: false
 
 discord:
-  token: "env"
+  token: "env"  # Se usa `env` para leer la variable en Railway
   useNickname: false
   skipOldMessages: true
   replyLength: 100
@@ -23,16 +23,19 @@ discord:
 
 bridges:
   - name: "Noticias"
-    direction: both
+    direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
+    threadMap:  # 🔹 Se usa `threadMap` para especificar el tópico exacto
+      - name: "Noticias en Telegram"
+        telegram: 86  # ✅ ID del tópico en Telegram
+        discord: '1332314270318460969'  # ✅ ID del canal en Discord (debe ir entre comillas)
     telegram:
-      chatId: "-1002479265586"  # ID del grupo general
-      threadId: "86"
+      chatId: "-1002479265586"  # ✅ ID del grupo de Telegram (debe incluir el `-`)
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
       crossDeleteOnDiscord: false
     discord:
-      channelId: "1332314270318460969"
+      channelId: '1332314270318460969'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
@@ -40,7 +43,8 @@ bridges:
       disableWebPreviewOnTelegram: false
       useEmbeds: "auto"
 
-debug: false
+debug: true  # Activa logs para verificar si el `threadMap` funciona
 messageTimeoutAmount: 24
-messageTimeoutUnit: "hours"
+messageTimeoutUnit: 'hours'
 persistentMessageMap: false
+
