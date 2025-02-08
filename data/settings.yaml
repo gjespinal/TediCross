@@ -26,7 +26,7 @@ bridges:
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:
       - telegram: 4  # ✅ Solo este tópico en Telegram
-        discord: '1337291310738178110'  # ✅ Canal/thread en Discord
+        discord: '1337835179065999380'  # ✅ Canal/thread en Discord
     telegram:
       chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
       relayJoinMessages: false
@@ -34,7 +34,7 @@ bridges:
       sendUsernames: true
       crossDeleteOnDiscord: true
     discord:
-      channelId: '1337291310738178110'  # ✅ Debe estar en comillas
+      channelId: '1337835179065999380'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
