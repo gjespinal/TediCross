@@ -258,6 +258,10 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
  * @param ctx.tediCross	The TediCross context of the message
  * @param ctx.TediCross	The global TediCross context of the message
  */
+interface PreparedFile {
+    link: string;
+    name?: string;
+}
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
 
