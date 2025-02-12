@@ -268,7 +268,7 @@ tgBot.use((ctx: TediCrossContext, next: () => void) => {
 			
 			    //console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
 			   // return next();
-			});
+			//});
 
 
 			tgBot.use(relayMessage as any);
