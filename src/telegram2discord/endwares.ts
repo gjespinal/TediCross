@@ -263,20 +263,59 @@ interface PreparedFile {
     name?: string;
 }
 
-// 🔥 Agregar un ID del tema de Telegram que representa "Noticias"
-const NOTICIAS_THREAD_ID = 86; // Cambia esto por el ID real del tema de noticias
+// 🔥 ID del tema de Telegram que representa "Noticias"
+const NOTICIAS_THREAD_ID = 86; // Cambia esto por el ID real de tu tema de noticias
 
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
 
-    // 🚨 **FILTRAR SOLO MENSAJES DEL TEMA DE NOTICIAS**
-    if (ctx.tediCross.message?.message_thread_id !== NOTICIAS_THREAD_ID) {
-        console.log("⚠️ Mensaje ignorado: No es del tema de Noticias.");
+    // 📂 **OBTENER ARCHIVOS ADJUNTOS**
+    let files: PreparedFile[] = ctx.tediCross.prepared
+        .map((prepared: any) => prepared.file as PreparedFile)
+        .filter((file: PreparedFile) => file && file.link);
+
+    console.log(`📂 Archivos detectados inicialmente: ${files.length}`);
+
+    // 🚀 **Si no se detectaron archivos, verificar si es una foto de Telegram**
+    if (files.length === 0 && ctx.tediCross.message?.photo) {
+        const photoArray = ctx.tediCross.message.photo;
+        const largestPhoto = photoArray[photoArray.length - 1]; // Obtener la mejor calidad
+
+        if (largestPhoto) {
+            const fileId = largestPhoto.file_id;
+
+            try {
+                // 🔥 Obtener la URL real del archivo desde Telegram
+                const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`);
+                const data = await response.json();
+
+                if (data.ok && data.result.file_path) {
+                    const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${data.result.file_path}`;
+                    files.push({ link: fileUrl, name: "telegram_photo.jpg" });
+                    console.log("📸 Se ha obtenido la URL correcta de la imagen de Telegram.");
+                } else {
+                    console.log("❌ ERROR: No se pudo obtener la URL de la imagen desde Telegram.");
+                }
+
+            } catch (error) {
+                console.error("❌ ERROR al obtener la imagen desde Telegram:", error);
+            }
+        }
+    }
+
+    console.log(`📂 Total de archivos detectados después de verificar fotos: ${files.length}`);
+
+    // 🚨 **FILTRAR SOLO IMÁGENES DEL TEMA DE NOTICIAS**
+    if (files.length > 0 && ctx.tediCross.message?.message_thread_id !== NOTICIAS_THREAD_ID) {
+        console.log("⚠️ Imagen recibida en un tema diferente a Noticias. No se enviará a Discord.");
         return;
     }
 
-    // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
-    ctx.tediCross.alreadyProcessed = false;
+    // 🚀 **Si no hay imágenes, detener el proceso**
+    if (files.length === 0) {
+        console.log("⚠️ No hay imágenes en el mensaje, no se enviará a Discord.");
+        return;
+    }
 
     try {
         // ✅ Verificar que el bot de Discord está listo
@@ -295,53 +334,8 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
         console.log("✅ Canal de Discord obtenido: " + channel.id);
 
-        // 📨 **PREPARAR MENSAJE**
-        const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
-
-        // 📂 **OBTENER ARCHIVOS ADJUNTOS**
-        let files: PreparedFile[] = ctx.tediCross.prepared
-            .map((prepared: any) => prepared.file as PreparedFile)
-            .filter((file: PreparedFile) => file && file.link);
-
-        console.log(`📂 Archivos detectados inicialmente: ${files.length}`);
-
-        // 🚀 **Si no se detectaron archivos, verificar si es una foto de Telegram**
-        if (files.length === 0 && ctx.tediCross.message?.photo) {
-            const photoArray = ctx.tediCross.message.photo;
-            const largestPhoto = photoArray[photoArray.length - 1]; // Obtener la mejor calidad
-
-            if (largestPhoto) {
-                const fileId = largestPhoto.file_id;
-
-                try {
-                    // 🔥 Obtener la URL real del archivo desde Telegram
-                    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`);
-                    const data = await response.json();
-
-                    if (data.ok && data.result.file_path) {
-                        const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${data.result.file_path}`;
-                        files.push({ link: fileUrl, name: "telegram_photo.jpg" });
-                        console.log("📸 Se ha obtenido la URL correcta de la imagen de Telegram.");
-                    } else {
-                        console.log("❌ ERROR: No se pudo obtener la URL de la imagen desde Telegram.");
-                    }
-
-                } catch (error) {
-                    console.error("❌ ERROR al obtener la imagen desde Telegram:", error);
-                }
-            }
-        }
-
-        console.log(`📂 Total de archivos detectados después de verificar fotos: ${files.length}`);
-
-        // ✅ **SOLO ENVIAR MENSAJES SI HAY UNA IMAGEN**
-        if (files.length === 0) {
-            console.log("⚠️ No hay imágenes en el mensaje, no se enviará a Discord.");
-            return;
-        }
-
         // ✅ **CREAR OBJETO DE ENVÍO**
-        const sendOptions: any = { content: messageText || "Mensaje vacío" };
+        const sendOptions: any = {};
 
         if (files.length > 0) {
             sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
@@ -350,17 +344,17 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         // 🚀 **EVITAR DUPLICACIÓN DE IMÁGENES**
         if (!ctx.tediCross.alreadyProcessed) {
             const sentMessage = await channel.send(sendOptions);
-            console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
+            console.log("✅ Imagen enviada a Discord con ID: " + sentMessage.id);
 
             // 🚀 **MARCAR COMO PROCESADO**
             ctx.tediCross.alreadyProcessed = true;
-            console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
+            console.log("✅ Imagen marcada como procesada para evitar duplicación.");
         } else {
-            console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
+            console.log("⚠️ Imagen ya procesada previamente, evitando duplicación.");
         }
 
     } catch (err: any) {
-        console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
+        console.error("❌ ERROR al enviar imagen a Discord: " + err.message);
     }
 };
 
