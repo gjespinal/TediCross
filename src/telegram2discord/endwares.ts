@@ -263,8 +263,17 @@ interface PreparedFile {
     name?: string;
 }
 
+// 🔥 Agregar un ID del tema de Telegram que representa "Noticias"
+const NOTICIAS_THREAD_ID = 86; // Cambia esto por el ID real del tema de noticias
+
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
+
+    // 🚨 **FILTRAR SOLO MENSAJES DEL TEMA DE NOTICIAS**
+    if (ctx.tediCross.message?.message_thread_id !== NOTICIAS_THREAD_ID) {
+        console.log("⚠️ Mensaje ignorado: No es del tema de Noticias.");
+        return;
+    }
 
     // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
     ctx.tediCross.alreadyProcessed = false;
@@ -325,6 +334,12 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
         console.log(`📂 Total de archivos detectados después de verificar fotos: ${files.length}`);
 
+        // ✅ **SOLO ENVIAR MENSAJES SI HAY UNA IMAGEN**
+        if (files.length === 0) {
+            console.log("⚠️ No hay imágenes en el mensaje, no se enviará a Discord.");
+            return;
+        }
+
         // ✅ **CREAR OBJETO DE ENVÍO**
         const sendOptions: any = { content: messageText || "Mensaje vacío" };
 
@@ -348,7 +363,6 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
     }
 };
-
 
 
 /**
