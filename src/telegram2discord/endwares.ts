@@ -270,7 +270,7 @@ const SENALES_BOT_THREAD_ID = 4;
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
 
-    // ✅ **PREPARAR MENSAJE DE TEXTO**
+// ✅ **PREPARAR MENSAJE DE TEXTO**
   //  const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
 const formatMessage = (text: string): string => {
     return text
@@ -280,7 +280,7 @@ const formatMessage = (text: string): string => {
         .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
         .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
         .replace(/@crypto_musk1/gi, "")  // Elimina "@crypto_musk1"
-        .replace(/#(\w+\/\w+)/gi, "💰 `**$1**` 💰");  // Resalta el nombre de la moneda con negritas, código inline y emojis
+        .replace(/#(\w+\/\w+)/gi, "");  // Resalta el nombre de la moneda con negritas, código inline y emojis
 };
 
 // Aplica el formato antes de enviarlo a Discord
@@ -360,15 +360,18 @@ const isLong = /🟢 LONG/i.test(messageText);
 const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo para Short, Verde para Long, Azul por defecto
 
 // Extraer el nombre de la moneda (ejemplo: #XLM/USDT)
-const matchCoin = messageText.match(/#(\w+\/\w+)/);
-const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
+//const matchCoin = messageText.match(/#(\w+\/\w+)/);
+//const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
 
 // Crear el embed
 const embed = new EmbedBuilder()
     .setTitle(`📢 Señal de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
-    .setDescription(`💰 **\`${coinName}\`** 💰\n\n${messageText}`)
-    .setColor(embedColor)
-    .setTimestamp(); // Agrega la fecha y hora automática
+    .setDescription(
+                `💰 **\`${coinName}\`** 💰\n\n` +
+                messageText
+            )
+            .setColor(embedColor)
+            .setTimestamp(); // Agrega la fecha y hora automática
 
 // Configurar opciones de envío
 const sendOptions: any = { embeds: [embed] };
