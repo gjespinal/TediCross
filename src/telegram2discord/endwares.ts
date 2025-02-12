@@ -266,7 +266,7 @@ export const relayMessage = (ctx: TediCrossContext) => {
         console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
         return;
     }
-    ctx.tediCross.alreadyProcessed = true;
+    ctx.tediCross.alreadyProcessed = true; // 🔥 Inicializar esta propiedad
 
     if (ctx.tediCross.message?.media_group_id) {
         if (!ctx.tediCross.hasMediaGroup) {
