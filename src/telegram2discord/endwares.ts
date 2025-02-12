@@ -285,20 +285,33 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
 
         // 📂 **OBTENER ARCHIVOS ADJUNTOS**
-        const files = ctx.tediCross.prepared
+        let files = ctx.tediCross.prepared
             .map((prepared: any) => prepared.file)
             .filter((file: any) => file && file.link); // Asegurar que existan archivos válidos
 
-        console.log(`📂 Archivos detectados: ${files.length}`);
+        console.log(`📂 Archivos detectados inicialmente: ${files.length}`);
+
+        // 🚀 **Si no se detectaron archivos, verificar si es una foto de Telegram**
+        if (files.length === 0 && ctx.tediCross.message?.photo) {
+            const photoArray = ctx.tediCross.message.photo;
+            const largestPhoto = photoArray[photoArray.length - 1]; // Obtener la mejor calidad
+
+            if (largestPhoto) {
+                const fileId = largestPhoto.file_id;
+                const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${fileId}`;
+
+                files.push({ attachment: fileUrl, name: "telegram_photo.jpg" });
+                console.log("📸 Se ha detectado una imagen de Telegram.");
+            }
+        }
+
+        console.log(`📂 Total de archivos detectados después de verificar fotos: ${files.length}`);
 
         // ✅ **CREAR OBJETO DE ENVÍO**
         const sendOptions: any = { content: messageText || "Mensaje vacío" };
 
         if (files.length > 0) {
-            sendOptions.files = files.map((file: any) => ({
-                attachment: file.link,
-                name: file.name || "archivo.jpg",
-            }));
+            sendOptions.files = files;
         }
 
         // 🚀 **EVITAR DUPLICACIÓN DE IMÁGENES**
@@ -317,6 +330,7 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
     }
 };
+
 
 
 
