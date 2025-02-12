@@ -281,11 +281,21 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
         console.log(`✅ Canal de Discord obtenido: ${channel.id}`);
 
-        // 📨 **ENVIAR MENSAJE A DISCORD**
+        // 📨 **PREPARAR MENSAJE**
         const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
+        const files = ctx.tediCross.prepared.map((prepared: any) => prepared.file).filter((file: any) => file);
+
         console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
 
-        const sentMessage = await channel.send(messageText);
+        // ✅ **ENVIAR MENSAJE CON ARCHIVOS SI EXISTEN**
+        const sendOptions: any = { content: messageText };
+
+        if (files.length > 0) {
+            console.log(`📂 Enviando ${files.length} archivo(s) adjunto(s)`);
+            sendOptions.files = files.map((file: any) => ({ attachment: file.link, name: file.name }));
+        }
+
+        const sentMessage = await channel.send(sendOptions);
         console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
 
         // 🚀 **MARCAR COMO PROCESADO SOLO DESPUÉS DE ENVIAR**
@@ -296,6 +306,7 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
     }
 };
+
 
 
 
