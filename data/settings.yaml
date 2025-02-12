@@ -22,7 +22,7 @@ discord:
   customStatusMessage: "TediCross"
 
 bridges:
-  - name: "Crypto smart"
+  - name: "Crypto smart Signal"
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:
       - telegram: 4  # ✅ Solo este tópico en Telegram
@@ -35,6 +35,25 @@ bridges:
       crossDeleteOnDiscord: true
     discord:
       channelId: '1337835179065999380'  # ✅ Debe estar en comillas
+      relayJoinMessages: false
+      relayLeaveMessages: false
+      sendUsernames: true
+      crossDeleteOnTelegram: true
+      disableWebPreviewOnTelegram: false
+      useEmbeds: "auto"
+  - name: "Crypto smart New"
+    direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
+    threadMap:
+      - telegram: 86  # ✅ Solo este tópico en Telegram
+        discord: '1337835179065999380'  # ✅ Canal/thread en Discord
+    telegram:
+      chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
+      relayJoinMessages: false
+      relayLeaveMessages: false
+      sendUsernames: true
+      crossDeleteOnDiscord: true
+    discord:
+      channelId: '1332314270318460969'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
