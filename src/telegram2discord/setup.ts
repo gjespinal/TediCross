@@ -215,25 +215,18 @@ tgBot.use((ctx: TediCrossContext, next: () => void) => {
         return;
     }
 
-    // 💡 **Aquí agregamos `discordChannelId` al objeto `tediCross`**
-    ctx.tediCross.discordChannelId = topicToDiscordChannel[message.message_thread_id];
+   // 💡 **Aquí agregamos `discordChannelId` al objeto `tediCross`**
+ctx.tediCross.discordChannelId = topicToDiscordChannel[message.message_thread_id];
+
+console.log(
+    `✅ Mensaje del tópico ${message.message_thread_id} será enviado al canal de Discord ${ctx.tediCross.discordChannelId}`
+);
+
 
     console.log(`✅ Mensaje del tópico ${message.message_thread_id} será enviado al canal de Discord ${ctx.tediCross.discordChannelId}`);
 
     return next();
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 			
 			//tgBot.use((ctx: TediCrossContext, next: () => void) => {
