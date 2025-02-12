@@ -273,15 +273,16 @@ export const relayMessage = async (ctx: TediCrossContext) => {
   //  const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
 const formatMessage = (text: string): string => {
     return text
-        .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números sin encerrar todo el mensaje
+        .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
         .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
         .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
         .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
         .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
-        .replace(/@crypto_musk1/gi, "");  // Elimina "@crypto_musk1"
+        .replace(/@crypto_musk1/gi, "")  // Elimina "@crypto_musk1"
+        .replace(/#(\w+\/\w+)/gi, "💰 `**$1**` 💰");  // Resalta el nombre de la moneda con negritas, código inline y emojis
 };
 
-// Aplica el formato mejorado antes de enviarlo a Discord
+// Aplica el formato antes de enviarlo a Discord
 const messageText = formatMessage(
     (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "")
 ).trim(); // Elimina espacios extra al final
