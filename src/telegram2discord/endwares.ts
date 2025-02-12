@@ -258,17 +258,14 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
  * @param ctx.tediCross	The TediCross context of the message
  * @param ctx.TediCross	The global TediCross context of the message
  */
-export const relayMessage = (ctx: TediCrossContext) => {
+export const relayMessage = async (ctx: TediCrossContext) => {
     console.log(`🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: ${ctx.tediCross.message?.message_thread_id})`);
 
-    // 🚨 VERIFICAR SI YA FUE PROCESADO
+    // ⚠️ Si ya se procesó, salir
     if (ctx.tediCross.alreadyProcessed) {
         console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
         return;
     }
-
-    // ✅ Marcar mensaje como procesado para evitar duplicaciones
-    ctx.tediCross.alreadyProcessed = true;
 
     // 🟢 Manejo de Media Groups (si hay imágenes/videos en grupo)
     if (ctx.tediCross.message?.media_group_id) {
@@ -279,36 +276,39 @@ export const relayMessage = (ctx: TediCrossContext) => {
         }
     }
 
-    R.forEach(async (prepared: any) => {
-        try {
-            // ✅ Verificar que el bot de Discord está listo
-            await ctx.TediCross.dcBot.ready;
-            console.log("✅ Discord bot está listo, buscando canal...");
+    try {
+        // ✅ Verificar que el bot de Discord está listo
+        await ctx.TediCross.dcBot.ready;
+        console.log("✅ Discord bot está listo, buscando canal...");
 
-            // ✅ Obtener el canal de Discord correcto
-            const channel = ctx.tediCross.discordChannelId 
-                ? await ctx.TediCross.dcBot.channels.fetch(ctx.tediCross.discordChannelId) 
-                : await fetchDiscordChannel(ctx.TediCross.dcBot, prepared.bridge, ctx.tediCross.message?.message_thread_id);
-            
-            console.log(`✅ Canal de Discord obtenido: ${channel?.id}`);
+        // ✅ Obtener el canal de Discord correcto
+        const channel = ctx.tediCross.discordChannelId 
+            ? await ctx.TediCross.dcBot.channels.fetch(ctx.tediCross.discordChannelId) 
+            : await fetchDiscordChannel(ctx.TediCross.dcBot, ctx.tediCross.bridges[0], ctx.tediCross.message?.message_thread_id);
 
-            if (!channel) {
-                console.error("❌ ERROR: No se pudo obtener el canal de Discord.");
-                return;
-            }
-
-            // 🟢 ENVIAR MENSAJE A DISCORD
-            const messageText = prepared.header + "\n" + prepared.text;
-            console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
-
-            const sentMessage = await channel.send(messageText);
-            console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
-
-        } catch (err: any) {
-            console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
+        if (!channel) {
+            console.error("❌ ERROR: No se pudo obtener el canal de Discord.");
+            return;
         }
-    })(ctx.tediCross.prepared);
+
+        console.log(`✅ Canal de Discord obtenido: ${channel.id}`);
+
+        // 📨 ENVIAR MENSAJE A DISCORD
+        const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
+        console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
+
+        const sentMessage = await channel.send(messageText);
+        console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
+
+        // ✅ Marcar mensaje como procesado **DESPUÉS** de enviarlo
+        ctx.tediCross.alreadyProcessed = true;
+        console.log(`✅ Mensaje marcado como procesado para evitar duplicación.`);
+    
+    } catch (err: any) {
+        console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
+    }
 };
+
 
 
 
