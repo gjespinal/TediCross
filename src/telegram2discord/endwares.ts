@@ -266,6 +266,7 @@ interface PreparedFile {
 
 
 // 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar mensajes con imágenes de este tema)
+// 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar mensajes con imágenes de este tema)
 const SENALES_BOT_THREAD_ID = 4;
 
 export const relayMessage = async (ctx: TediCrossContext) => {
@@ -278,8 +279,8 @@ export const relayMessage = async (ctx: TediCrossContext) => {
     rawText = rawText.replace(/^\s*\S+\s*$/gm, "").trim();
 
     // Extraer el nombre de la moneda antes del formateo
-    const matchCoin = rawText.match(/#(\w+\/\w+)/);
-    const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
+    let matchCoin = rawText.match(/#(\w+\/\w+)/);
+    let coinName = matchCoin ? matchCoin[1] : null;
 
     // 📂 **OBTENER ARCHIVOS ADJUNTOS**
     let files: PreparedFile[] = ctx.tediCross.prepared
@@ -352,18 +353,22 @@ export const relayMessage = async (ctx: TediCrossContext) => {
             const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo para Short, Verde para Long, Azul por defecto
 
             // Formatear el mensaje
-            const formattedText = rawText
+            let formattedText = rawText
                 .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
                 .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
                 .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
                 .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
                 .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
-                .replace(/@crypto_musk1/gi, "");  // Elimina "@crypto_musk1"
+                .replace(/@crypto_musk1/gi, "")  // Elimina "@crypto_musk1"
+                .replace(/🔵 Long/gi, ""); // 🔥 Elimina el texto duplicado "Long"
+
+            // Si la moneda no se detectó en el mensaje, poner "Sin Identificar"
+            const formattedCoinName = coinName ? `💰 **\`${coinName}\`** 💰` : "💰 **Sin Identificar** 💰";
 
             // Crear el embed
             const embed = new EmbedBuilder()
                 .setTitle(`📢 Alerta de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
-                .setDescription(`💰 **\`${coinName}\`** 💰\n\n${formattedText}`)
+                .setDescription(`${formattedCoinName}\n\n${formattedText}`)
                 .setColor(embedColor)
                 .setTimestamp();
 
