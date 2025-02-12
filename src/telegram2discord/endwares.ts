@@ -267,15 +267,6 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         return;
     }
 
-    // 🟢 Manejo de Media Groups (si hay imágenes/videos en grupo)
-    if (ctx.tediCross.message?.media_group_id) {
-        if (!ctx.tediCross.hasMediaGroup) {
-            parseMediaGroup(ctx);
-            setTimeout(parseMediaGroup, 5000, ctx, true);
-            return;
-        }
-    }
-
     try {
         // ✅ Verificar que el bot de Discord está listo
         await ctx.TediCross.dcBot.ready;
@@ -300,7 +291,7 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         const sentMessage = await channel.send(messageText);
         console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
 
-        // ✅ Marcar mensaje como procesado **DESPUÉS** de enviarlo
+        // 🔄 **Aquí marcamos el mensaje como procesado, pero solo después de enviarlo correctamente**
         ctx.tediCross.alreadyProcessed = true;
         console.log(`✅ Mensaje marcado como procesado para evitar duplicación.`);
     
@@ -308,6 +299,7 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
     }
 };
+
 
 
 
