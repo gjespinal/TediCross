@@ -45,7 +45,7 @@ bridges:
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:
       - telegram: 86  # ✅ Solo este tópico en Telegram
-        discord: '1337835179065999380'  # ✅ Canal/thread en Discord
+        discord: '1332314270318460969'  # ✅ Canal/thread en Discord
     telegram:
       chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
       relayJoinMessages: false
