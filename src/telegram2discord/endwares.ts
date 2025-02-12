@@ -354,7 +354,10 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         }
 
     } catch (err: any) {
-        console.error("❌ ERROR al enviar
+        console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
+    }
+};
+
 
 
 
