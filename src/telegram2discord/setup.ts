@@ -203,8 +203,8 @@ tgBot.use((ctx: TediCrossContext, next: () => void) => {
 
     // Mapeo de tópicos en Telegram a canales en Discord
     const topicToDiscordChannel: Record<number, string> = {
-        4: "ID_DEL_CANAL_DISCORD_1",   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 4
-        86: "ID_DEL_CANAL_DISCORD_2"   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 86
+        4: "1337835179065999380",   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 4
+        86: "1332314270318460969"   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 86
     };
 
     if (!(message.message_thread_id in topicToDiscordChannel)) {
