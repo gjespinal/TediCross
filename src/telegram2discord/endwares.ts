@@ -294,16 +294,22 @@ ctx.tediCross.alreadyProcessed = true; // ✅ Marcar el mensaje como procesado
 	   // .map((prepared: any) => prepared.file)
 	   // .filter((file: any) => file);
 
+// 🛠️ Filtrar imágenes duplicadas antes de enviarlas a Discord
 const files = ctx.tediCross.prepared
-    .map((prepared: any) => prepared.file)
-    .filter((file: any) => file && file.link) // Filtrar archivos no válidos
+    .map((prepared: any) => prepared.file)  // Extraer archivos
+    .filter((file: any) => file && file.link) // Asegurar que tiene un enlace válido
     .reduce((uniqueFiles: any[], file: any) => {
-        // Evita duplicados verificando si el link ya está en la lista
         if (!uniqueFiles.some(existingFile => existingFile.attachment === file.link)) {
             uniqueFiles.push({ attachment: file.link, name: file.name || "file.jpg" });
         }
         return uniqueFiles;
     }, []);
+
+if (files.length > 0) {
+    console.log(`📂 Enviando ${files.length} archivo(s) adjunto(s)`);
+    sendOptions.files = files;
+}
+
 
 
 	    
