@@ -287,13 +287,6 @@ const messageText = formatMessage(
     (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "")
 ).trim(); // Elimina espacios extra al final
 
-
-
-
-
-
-
-	
     // 📂 **OBTENER ARCHIVOS ADJUNTOS**
     let files: PreparedFile[] = ctx.tediCross.prepared
         .map((prepared: any) => prepared.file as PreparedFile)
@@ -357,8 +350,50 @@ const messageText = formatMessage(
         console.log("✅ Canal de Discord obtenido: " + channel.id);
 
         // ✅ **CREAR OBJETO DE ENVÍO**
-        const sendOptions: any = { content: messageText || "Mensaje vacío" };
+       // const sendOptions: any = { content: messageText || "Mensaje vacío" };
+import { EmbedBuilder } from "discord.js"; // Asegúrate de importar esto
 
+// Determinar el color del embed basado en si es LONG o SHORT
+const isShort = /🔴 SHORT/i.test(messageText);
+const isLong = /🟢 LONG/i.test(messageText);
+const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo para Short, Verde para Long, Azul por defecto
+
+// Extraer el nombre de la moneda (ejemplo: #XLM/USDT)
+const matchCoin = messageText.match(/#(\w+\/\w+)/);
+const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
+
+// Crear el embed
+const embed = new EmbedBuilder()
+    .setTitle(`📢 Señal de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
+    .setDescription(`💰 **\`${coinName}\`** 💰\n\n${messageText}`)
+    .setColor(embedColor)
+    .setTimestamp(); // Agrega la fecha y hora automática
+
+// Configurar opciones de envío
+const sendOptions: any = { embeds: [embed] };
+
+// Si hay archivos adjuntos, agrégales al embed
+if (files.length > 0) {
+    sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
+}
+
+// 🚀 **EVITAR DUPLICACIÓN DE MENSAJES**
+if (!ctx.tediCross.alreadyProcessed) {
+    const sentMessage = await channel.send(sendOptions);
+    console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
+
+    // 🚀 **MARCAR COMO PROCESADO**
+    ctx.tediCross.alreadyProcessed = true;
+    console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
+} else {
+    console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
+}
+
+
+
+
+
+	    
         if (files.length > 0) {
             sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
         }
