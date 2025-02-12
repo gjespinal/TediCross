@@ -264,35 +264,22 @@ interface PreparedFile {
     name?: string;
 }
 
+
 // 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar mensajes con imágenes de este tema)
 const SENALES_BOT_THREAD_ID = 4;
 
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
-   // Extraer el mensaje antes del formateo
-    const rawText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
+
+    // Extraer el mensaje antes del formateo
+    let rawText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
+
+    // Eliminar nombres de usuario si aparecen solos en una línea
+    rawText = rawText.replace(/^\s*\S+\s*$/gm, "").trim();
 
     // Extraer el nombre de la moneda antes del formateo
     const matchCoin = rawText.match(/#(\w+\/\w+)/);
     const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
-
-// ✅ **PREPARAR MENSAJE DE TEXTO**
-  //  const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
-const formatMessage = (text: string): string => {
-    return text
-        .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
-        .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
-        .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
-        .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
-        .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
-        .replace(/@crypto_musk1/gi, "")  // Elimina "@crypto_musk1"
-        .replace(/#(\w+\/\w+)/gi, "");  // Resalta el nombre de la moneda con negritas, código inline y emojis
-};
-
-// Aplica el formato antes de enviarlo a Discord
-const messageText = formatMessage(
-    (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "")
-).trim(); // Elimina espacios extra al final
 
     // 📂 **OBTENER ARCHIVOS ADJUNTOS**
     let files: PreparedFile[] = ctx.tediCross.prepared
@@ -301,7 +288,7 @@ const messageText = formatMessage(
 
     console.log(`📂 Archivos detectados inicialmente: ${files.length}`);
 
-    // 🚀 **Si no se detectaron archivos, verificar si es una foto de Telegram**
+    // ✅ **Filtrar imágenes de Telegram si es necesario**
     if (files.length === 0 && ctx.tediCross.message?.photo) {
         const photoArray = ctx.tediCross.message.photo;
         const largestPhoto = photoArray[photoArray.length - 1]; // Obtener la mejor calidad
@@ -321,7 +308,6 @@ const messageText = formatMessage(
                 } else {
                     console.log("❌ ERROR: No se pudo obtener la URL de la imagen desde Telegram.");
                 }
-
             } catch (error) {
                 console.error("❌ ERROR al obtener la imagen desde Telegram:", error);
             }
@@ -333,7 +319,7 @@ const messageText = formatMessage(
     // 🚨 **BLOQUEAR MENSAJES DEL TEMA 4 QUE CONTENGAN IMÁGENES**
     if (ctx.tediCross.message?.message_thread_id === SENALES_BOT_THREAD_ID && files.length > 0) {
         console.log("⚠️ Mensaje con imagen en el tema 'Señales Bot'. NO se enviará a Discord.");
-        return; // Bloquea completamente el mensaje (texto + imagen)
+        return;
     }
 
     // ✅ **REINICIAR FLAG DE PROCESAMIENTO**
@@ -356,70 +342,76 @@ const messageText = formatMessage(
 
         console.log("✅ Canal de Discord obtenido: " + channel.id);
 
-        // ✅ **CREAR OBJETO DE ENVÍO**
-       // const sendOptions: any = { content: messageText || "Mensaje vacío" };
+        // 🚀 **DIFERENCIAR MENSAJES DEL TEMA 4 vs. OTROS TEMAS**
+        if (ctx.tediCross.message?.message_thread_id === SENALES_BOT_THREAD_ID) {
+            // ✅ **MENSAJES DEL TEMA 4 → EMBED CON FORMATO ESPECIAL**
 
+            // Determinar el color del embed basado en si es LONG o SHORT
+            const isShort = /🔴 SHORT/i.test(rawText);
+            const isLong = /🟢 LONG/i.test(rawText);
+            const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo para Short, Verde para Long, Azul por defecto
 
-// Determinar el color del embed basado en si es LONG o SHORT
-const isShort = /🔴 SHORT/i.test(messageText);
-const isLong = /🟢 LONG/i.test(messageText);
-const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo para Short, Verde para Long, Azul por defecto
+            // Formatear el mensaje
+            const formattedText = rawText
+                .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
+                .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
+                .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
+                .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
+                .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
+                .replace(/@crypto_musk1/gi, "");  // Elimina "@crypto_musk1"
 
-// Extraer el nombre de la moneda (ejemplo: #XLM/USDT)
-//const matchCoin = messageText.match(/#(\w+\/\w+)/);
-//const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
+            // Crear el embed
+            const embed = new EmbedBuilder()
+                .setTitle(`📢 Alerta de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
+                .setDescription(`💰 **\`${coinName}\`** 💰\n\n${formattedText}`)
+                .setColor(embedColor)
+                .setTimestamp();
 
-// Crear el embed
-const embed = new EmbedBuilder()
-    .setTitle(`📢 Alerta de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
-    .setDescription(
-                `💰 **\`${coinName}\`** 💰\n\n` +
-                messageText
-            )
-            .setColor(embedColor)
-            .setTimestamp(); // Agrega la fecha y hora automática
+            // Configurar opciones de envío
+            const sendOptions: any = { embeds: [embed] };
 
-// Configurar opciones de envío
-const sendOptions: any = { embeds: [embed] };
+            // Si hay archivos adjuntos, agrégales al embed
+            if (files.length > 0) {
+                sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
+            }
 
-// Si hay archivos adjuntos, agrégales al embed
-if (files.length > 0) {
-    sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
-}
+            // 🚀 **EVITAR DUPLICACIÓN DE MENSAJES**
+            if (!ctx.tediCross.alreadyProcessed) {
+                const sentMessage = await channel.send(sendOptions);
+                console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
 
-// 🚀 **EVITAR DUPLICACIÓN DE MENSAJES**
-if (!ctx.tediCross.alreadyProcessed) {
-    const sentMessage = await channel.send(sendOptions);
-    console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
-
-    // 🚀 **MARCAR COMO PROCESADO**
-    ctx.tediCross.alreadyProcessed = true;
-    console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
-} else {
-    console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
-}
-
-	    
-        if (files.length > 0) {
-            sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
-        }
-
-        // 🚀 **EVITAR DUPLICACIÓN DE MENSAJES**
-        if (!ctx.tediCross.alreadyProcessed) {
-            const sentMessage = await channel.send(sendOptions);
-            console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
-
-            // 🚀 **MARCAR COMO PROCESADO**
-            ctx.tediCross.alreadyProcessed = true;
-            console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
+                // 🚀 **MARCAR COMO PROCESADO**
+                ctx.tediCross.alreadyProcessed = true;
+                console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
+            } else {
+                console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
+            }
         } else {
-            console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
-        }
+            // ✅ **MENSAJES DE OTROS TEMAS → TEXTO PLANO SIN FORMATO**
+            const sendOptions: any = { content: rawText };
 
+            // Si hay archivos adjuntos, agrégales al mensaje
+            if (files.length > 0) {
+                sendOptions.files = files.map(file => ({ attachment: file.link, name: file.name || "archivo.jpg" }));
+            }
+
+            // 🚀 **EVITAR DUPLICACIÓN DE MENSAJES**
+            if (!ctx.tediCross.alreadyProcessed) {
+                const sentMessage = await channel.send(sendOptions);
+                console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
+
+                // 🚀 **MARCAR COMO PROCESADO**
+                ctx.tediCross.alreadyProcessed = true;
+                console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
+            } else {
+                console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
+            }
+        }
     } catch (err: any) {
         console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
     }
 };
+
 
 
 
