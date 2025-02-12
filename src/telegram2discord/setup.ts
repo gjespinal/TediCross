@@ -199,15 +199,27 @@ export function setup(
 			        console.log("❌ Ignorando mensaje del canal general (sin tópico).");
 			        return;
 			    }
+
+			const allowedTopics = [4, 86]; // Lista de IDs de temas permitidos
+
+			if (!allowedTopics.includes(message.message_thread_id)) {
+			    console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${allowedTopics.join(", ")}`);
+			    return;
+			}
 			
-			    if (message.message_thread_id !== 4) {
-			        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos 9167`);
-			        return;
-			    }
+			console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
+			return next();
+
+
+				
+			    //if (message.message_thread_id !== 4) {
+			      //  console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos 4`);
+			        //return;
+			    //}
 			
-			    console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
-			    return next();
-			});
+			    //console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
+			   // return next();
+			//});
 
 
 			tgBot.use(relayMessage as any);
