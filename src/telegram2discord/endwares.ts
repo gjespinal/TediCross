@@ -7,7 +7,7 @@ import { deleteMessage, ignoreAlreadyDeletedError } from "./helpers";
 import { createFromObjFromUser } from "./From";
 import { MessageEditOptions, EmbedBuilder } from "discord.js";
 import { Message, User } from "telegraf/typings/core/types/typegram";
-import { EmbedBuilder } from "discord.js"; // Asegúrate de importar esto
+
 
 interface DiscordMessage {
 	embeds?: any[];
