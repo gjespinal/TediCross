@@ -192,6 +192,7 @@ export function setup(
 
 tgBot.use((ctx: TediCrossContext, next: () => void) => {
     const message = ctx.tediCross?.message;
+
     if (!message) {
         console.log("⚠️ Mensaje sin contenido, ignorando.");
         return;
@@ -203,32 +204,25 @@ tgBot.use((ctx: TediCrossContext, next: () => void) => {
         return;
     }
 
-    // Leer `threadMap` desde el archivo de configuración (settings.yml)
-    const bridges = ctx.TediCross.bridgeMap.bridges;
-    let discordChannelId: string | undefined;
+    // Mapeo de tópicos en Telegram a canales en Discord
+    const topicToDiscordChannel: Record<number, string> = {
+        4: "1337835179065999380",   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 4
+        86: "1332314270318460969"   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 86
+    };
 
-    for (const bridge of bridges) {
-        if (bridge.telegram.chatId === message.chat.id) {
-            // Buscar en `threadMap` el canal correspondiente en Discord
-            const threadMapping = bridge.threadMap?.find((mapping: any) => mapping.telegram === message.message_thread_id);
-            if (threadMapping) {
-                discordChannelId = threadMapping.discord;
-                break;
-            }
-        }
-    }
-
-    if (!discordChannelId) {
-        console.log(`❌ No se encontró un canal de Discord asignado para el tópico ${message.message_thread_id}.`);
+    if (!(message.message_thread_id in topicToDiscordChannel)) {
+        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${Object.keys(topicToDiscordChannel).join(", ")}`);
         return;
     }
 
-    // Asignar el canal de Discord al contexto antes de enviarlo
-    ctx.tediCross.discordChannelId = discordChannelId;
-    console.log(`✅ Mensaje del tópico ${message.message_thread_id} será enviado a Discord en el canal ${discordChannelId}`);
+    // 💡 **Aquí agregamos `discordChannelId` al objeto `tediCross`**
+    ctx.tediCross.discordChannelId = topicToDiscordChannel[message.message_thread_id];
+
+    console.log(`✅ Mensaje del tópico ${message.message_thread_id} será enviado al canal de Discord ${ctx.tediCross.discordChannelId}`);
 
     return next();
 });
+
 
 
 
