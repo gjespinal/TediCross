@@ -270,8 +270,20 @@ export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
 
     // ✅ **PREPARAR MENSAJE DE TEXTO**
-    const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
+  //  const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
+const formatMessage = (text: string): string => {
+    return `\`\`\`${text}\`\`\``; // Encierra todo el mensaje en un bloque de código
+};
 
+const messageText = formatMessage(
+    (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "")
+);
+
+
+
+
+
+	
     // 📂 **OBTENER ARCHIVOS ADJUNTOS**
     let files: PreparedFile[] = ctx.tediCross.prepared
         .map((prepared: any) => prepared.file as PreparedFile)
