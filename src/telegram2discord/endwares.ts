@@ -272,12 +272,14 @@ export const relayMessage = async (ctx: TediCrossContext) => {
     // ✅ **PREPARAR MENSAJE DE TEXTO**
   //  const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
 const formatMessage = (text: string): string => {
-    return `\`\`\`${text}\`\`\``; // Encierra todo el mensaje en un bloque de código
+    return text.replace(/\b(\d+\.\d+)\b/g, "`$1`"); // Resalta solo los números sin encerrar todo el mensaje
 };
 
+// Aplica el formato mejorado antes de enviarlo a Discord
 const messageText = formatMessage(
     (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "")
 );
+
 
 
 
