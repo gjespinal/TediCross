@@ -278,131 +278,35 @@ export const relayMessage = (ctx: TediCrossContext) => {
 
     R.forEach(async (prepared: any) => {
         try {
+            // ✅ Verificar que el bot está listo
             await ctx.TediCross.dcBot.ready;
+            console.log("✅ Discord bot está listo, buscando canal...");
 
-            console.log(`🚀 Enviando mensaje a Discord en canal: ${ctx.tediCross.discordChannelId}`);
-
+            // ✅ Obtener el canal de Discord correcto
             const channel = ctx.tediCross.discordChannelId 
                 ? await ctx.TediCross.dcBot.channels.fetch(ctx.tediCross.discordChannelId) 
                 : await fetchDiscordChannel(ctx.TediCross.dcBot, prepared.bridge, ctx.tediCross.message?.message_thread_id);
+            
+            console.log(`✅ Canal de Discord obtenido: ${channel?.id}`);
 
-            let dcMessage = null;
-            const messageToReply = prepared.messageToReply;
-            const replyId = prepared.replyId;
-
-            const messageText = prepared.header + "\n" + prepared.text;
-            const sendObject: DiscordMessage = {};
-
-            const useEmbeds =
-                (messageText.length > 2000 && prepared.bridge.discord.useEmbeds !== "never") || prepared.hasLinks;
-
-            if (useEmbeds) {
-                const text =
-                    prepared.text.length > 4096 ? prepared.text.substring(0, 4090) + "..." : prepared.text || " ";
-                let embeds: EmbedBuilder[] = [];
-                const photoEmbeds: EmbedBuilder[] = [];
-
-                const embed = new EmbedBuilder().setDescription(text);
-                if (prepared.header) {
-                    embed.setTitle(prepared.header);
-                }
-                embeds.push(embed);
-
-                if (!R.isNil(prepared.file)) {
-                    const files = prepared.files || [prepared.file];
-                    let resFiles = [];
-                    let tempPhotoUrl: string = "";
-                    for (const file of files) {
-                        if (file.description === "photo") {
-                            tempPhotoUrl = file.attachment;
-                            photoEmbeds.push(new EmbedBuilder().setImage(tempPhotoUrl));
-                        } else {
-                            resFiles.push(file);
-                        }
-                    }
-                    if (photoEmbeds.length === 1) {
-                        embeds[0].setImage(tempPhotoUrl);
-                    } else if (prepared.bridge.discord.useEmbeds !== "auto") {
-                        embeds = embeds.concat(photoEmbeds);
-                    } else {
-                        resFiles = files;
-                    }
-                    if (resFiles.length) {
-                        sendObject.files = resFiles;
-                    }
-                }
-
-                sendObject.embeds = embeds;
-
-                try {
-                    if (replyId === "0" || replyId === undefined || messageToReply === undefined) {
-                        dcMessage = await channel.send(sendObject);
-                    } else {
-                        dcMessage = await messageToReply.reply(sendObject);
-                    }
-                } catch (err: any) {
-                    if (err.message === "Request entity too large") {
-                        dcMessage = await channel.send(
-                            `***${prepared.senderName}** en Telegram envió un archivo demasiado grande para Discord. Pídele que lo envíe de otra manera.*`
-                        );
-                    } else {
-                        throw err;
-                    }
-                }
-            } else {
-                let chunks = R.splitEvery(2000, messageText);
-                if (!R.isNil(prepared.file)) {
-                    try {
-                        if (replyId === "0" || replyId === undefined || messageToReply === undefined) {
-                            dcMessage = await channel.send({
-                                content: R.head(chunks),
-                                files: prepared.files || [prepared.file]
-                            });
-                        } else {
-                            dcMessage = await messageToReply.reply({
-                                content: R.head(chunks),
-                                files: prepared.files || [prepared.file]
-                            });
-                        }
-                        chunks = R.tail(chunks);
-                    } catch (err: any) {
-                        if (err.message === "Request entity too large") {
-                            dcMessage = await channel.send(
-                                `***${prepared.senderName}** en Telegram envió un archivo demasiado grande para Discord. Pídele que lo envíe de otra manera.*`
-                            );
-                        } else {
-                            throw err;
-                        }
-                    }
-                }
-                if (replyId === "0" || replyId === undefined || messageToReply === undefined) {
-                    dcMessage = await R.reduce(
-                        (p, chunk) => p.then(() => channel.send(chunk)),
-                        Promise.resolve(dcMessage),
-                        chunks
-                    );
-                } else {
-                    dcMessage = await R.reduce(
-                        (p, chunk) => p.then(() => messageToReply.reply(chunk)),
-                        Promise.resolve(dcMessage),
-                        chunks
-                    );
-                }
+            if (!channel) {
+                console.error("❌ ERROR: No se pudo obtener el canal de Discord.");
+                return;
             }
 
-            ctx.TediCross.messageMap.insert(
-                MessageMap.TELEGRAM_TO_DISCORD,
-                prepared.bridge,
-                ctx.tediCross.messageId,
-                dcMessage?.id
-            );
+            // 🔥 Enviar mensaje a Discord
+            const messageText = prepared.header + "\n" + prepared.text;
+            console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
+
+            const sentMessage = await channel.send(messageText);
+            console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
+
         } catch (err: any) {
-            ctx.TediCross.logger.error(
-                `❌ Error al reenviar mensaje a Discord en el puente ${prepared.bridge.name}: ${err}`
-            );
+            console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
         }
     })(ctx.tediCross.prepared);
 };
+
 
 
 /**
