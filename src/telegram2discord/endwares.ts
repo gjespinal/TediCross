@@ -261,11 +261,8 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log(`🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: ${ctx.tediCross.message?.message_thread_id})`);
 
-    // ⚠️ Si ya se procesó, salir
-    if (ctx.tediCross.alreadyProcessed) {
-        console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
-        return;
-    }
+    // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
+    ctx.tediCross.alreadyProcessed = false;
 
     try {
         // ✅ Verificar que el bot de Discord está listo
@@ -284,14 +281,14 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
         console.log(`✅ Canal de Discord obtenido: ${channel.id}`);
 
-        // 📨 ENVIAR MENSAJE A DISCORD
+        // 📨 **ENVIAR MENSAJE A DISCORD**
         const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
         console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
 
         const sentMessage = await channel.send(messageText);
         console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
 
-        // 🔄 **Aquí marcamos el mensaje como procesado, pero solo después de enviarlo correctamente**
+        // 🚀 **MARCAR COMO PROCESADO SOLO DESPUÉS DE ENVIAR**
         ctx.tediCross.alreadyProcessed = true;
         console.log(`✅ Mensaje marcado como procesado para evitar duplicación.`);
     
