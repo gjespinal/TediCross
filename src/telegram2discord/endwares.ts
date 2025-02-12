@@ -33,7 +33,8 @@ export interface TediCrossContext extends Context {
         from: any;
         hasActualReference: boolean;
         hasMediaGroup?: boolean;
-        discordChannelId?: string;  // ✅ Agregar esta línea
+        discordChannelId?: string;  
+        alreadyProcessed?: boolean;  // ✅ Agregar esta línea
     };
 }
 
