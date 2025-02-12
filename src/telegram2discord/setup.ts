@@ -190,43 +190,7 @@ export function setup(
 
 
 
-tgBot.use((ctx: TediCrossContext, next: () => void) => {
-    const message = ctx.tediCross?.message;
 
-    if (!message) {
-        console.log("⚠️ Mensaje sin contenido, ignorando.");
-        return;
-    }
-
-    // Verificar si el mensaje viene de un tema (thread)
-    if (!message.message_thread_id) {
-        console.log("❌ Ignorando mensaje del canal general (sin tópico).");
-        return;
-    }
-
-    // Mapeo de tópicos en Telegram a canales en Discord
-    const topicToDiscordChannel: Record<number, string> = {
-        4: "1337835179065999380",   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 4
-        86: "1332314270318460969"   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 86
-    };
-
-    if (!(message.message_thread_id in topicToDiscordChannel)) {
-        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${Object.keys(topicToDiscordChannel).join(", ")}`);
-        return;
-    }
-
-   // 💡 **Aquí agregamos `discordChannelId` al objeto `tediCross`**
-ctx.tediCross.discordChannelId = topicToDiscordChannel[message.message_thread_id];
-
-console.log(
-    `✅ Mensaje del tópico ${message.message_thread_id} será enviado al canal de Discord ${ctx.tediCross.discordChannelId}`
-);
-
-
-    console.log(`✅ Mensaje del tópico ${message.message_thread_id} será enviado al canal de Discord ${ctx.tediCross.discordChannelId}`);
-
-    return next();
-});
 
 			
 			//tgBot.use((ctx: TediCrossContext, next: () => void) => {
@@ -265,6 +229,60 @@ console.log(
 			//});
 
 
+
+
+tgBot.use((ctx: TediCrossContext, next: () => void) => {
+    const message = ctx.tediCross?.message;
+
+    if (!message) {
+        console.log("⚠️ Mensaje sin contenido, ignorando.");
+        return;
+    }
+
+    if (!message.message_thread_id) {
+        console.log("❌ Ignorando mensaje del canal general (sin tópico).");
+        return;
+    }
+
+    const topicToDiscordChannel: Record<number, string> = {
+        4: "1337835179065999380",
+        86: "1332314270318460969"
+    };
+
+    if (!(message.message_thread_id in topicToDiscordChannel)) {
+        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${Object.keys(topicToDiscordChannel).join(", ")}`);
+        return;
+    }
+
+    // ✅ Verificar si el mensaje ya fue procesado
+    if (ctx.tediCross.alreadyProcessed) {
+        console.log(`⏭️ Mensaje ya procesado, ignorando duplicación (Tópico: ${message.message_thread_id})`);
+        return;
+    }
+    ctx.tediCross.alreadyProcessed = true; // Marcar el mensaje como procesado
+
+    ctx.tediCross.discordChannelId = topicToDiscordChannel[message.message_thread_id];
+
+    console.log(`✅ Mensaje del tópico ${message.message_thread_id} será enviado a Discord en el canal ${ctx.tediCross.discordChannelId}`);
+
+    return next();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			
 			tgBot.use(relayMessage as any);
 
 			// Don't crash on errors
