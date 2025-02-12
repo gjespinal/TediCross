@@ -283,30 +283,40 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
         // 📨 **PREPARAR MENSAJE**
         const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
-        const files = ctx.tediCross.prepared.map((prepared: any) => prepared.file).filter((file: any) => file);
 
-        console.log("📨 Enviando mensaje a Discord: " + messageText);
+        // 📂 **OBTENER ARCHIVOS ADJUNTOS**
+        const files = ctx.tediCross.prepared
+            .map((prepared: any) => prepared.file)
+            .filter((file: any) => file && file.link); // Asegurar que existan archivos válidos
 
-        // ✅ **ENVIAR MENSAJE CON ARCHIVOS SI EXISTEN**
+        console.log(`📂 Archivos detectados: ${files.length}`);
+
+        // ✅ **CREAR OBJETO DE ENVÍO**
         const sendOptions: any = { content: messageText || "Mensaje vacío" };
 
         if (files.length > 0) {
-            console.log("📂 Enviando " + files.length + " archivo(s) adjunto(s)");
-            sendOptions.files = files.map((file: any) => ({ attachment: file.link, name: file.name }));
+            sendOptions.files = files.map((file: any) => ({
+                attachment: file.link,
+                name: file.name || "archivo.jpg",
+            }));
         }
 
-        const sentMessage = await channel.send(sendOptions);
-        console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
+        // 🚀 **EVITAR DUPLICACIÓN DE IMÁGENES**
+        if (!ctx.tediCross.alreadyProcessed) {
+            const sentMessage = await channel.send(sendOptions);
+            console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
 
-        // 🚀 **MARCAR COMO PROCESADO SOLO DESPUÉS DE ENVIAR**
-        ctx.tediCross.alreadyProcessed = true;
-        console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
-    
+            // 🚀 **MARCAR COMO PROCESADO**
+            ctx.tediCross.alreadyProcessed = true;
+            console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
+        } else {
+            console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
+        }
+
     } catch (err: any) {
         console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
     }
 };
-
 
 
 
