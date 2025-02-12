@@ -424,7 +424,8 @@ export const handleEdits = createMessageHandler(async (ctx: TediCrossContext, br
 			//console.log("t2d delete getCorresponding: " + dcMessageId);
 
 			// Get the channel to delete on
-			const channel = await fetchDiscordChannel(ctx.TediCross.dcBot, bridge);
+			//const channel = await fetchDiscordChannel(ctx.TediCross.dcBot, bridge);
+			const channel = await ctx.TediCross.dcBot.channels.fetch(ctx.tediCross.discordChannelId);
 
 			// Delete it on Discord
 			const dp = channel.bulkDelete([dcMessageId]);
