@@ -186,29 +186,78 @@ export function setup(
 			tgBot.on(["edited_message", "edited_channel_post"], handleEdits);
 			
 			// Filtrar mensajes que no son del thread correcto (86)
-			tgBot.use((ctx: TediCrossContext, next: () => void) => {
-			    const message = ctx.tediCross?.message;
+
+tgBot.use((ctx: TediCrossContext, next: () => void) => {
+    const message = ctx.tediCross?.message;
+
+    if (!message) {
+        console.log("⚠️ Mensaje sin contenido, ignorando.");
+        return;
+    }
+
+    // Verificar si el mensaje viene de un tema (thread)
+    if (!message.message_thread_id) {
+        console.log("❌ Ignorando mensaje del canal general (sin tópico).");
+        return;
+    }
+
+    // Mapeo de tópicos en Telegram a canales en Discord
+    const topicToDiscordChannel: Record<number, string> = {
+        4: "ID_DEL_CANAL_DISCORD_1",   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 4
+        86: "ID_DEL_CANAL_DISCORD_2"   // 🔹 Reemplaza con el ID del canal de Discord para el tópico 86
+    };
+
+    if (!(message.message_thread_id in topicToDiscordChannel)) {
+        console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${Object.keys(topicToDiscordChannel).join(", ")}`);
+        return;
+    }
+
+    // Asignar el canal correcto de Discord al contexto antes de enviarlo
+    ctx.tediCross.discordChannelId = topicToDiscordChannel[message.message_thread_id];
+
+    console.log(`✅ Mensaje del tópico ${message.message_thread_id} será enviado al canal de Discord ${ctx.tediCross.discordChannelId}`);
+
+    return next();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			
-			    if (!message) {
-			        console.log("⚠️ Mensaje sin contenido, ignorando.");
-			        return;
-			    }
+			//tgBot.use((ctx: TediCrossContext, next: () => void) => {
+			  //  const message = ctx.tediCross?.message;
+			
+			    //if (!message) {
+			      //  console.log("⚠️ Mensaje sin contenido, ignorando.");
+			        //return;
+			    //}
 			
 			    // Verificar si el mensaje viene del tema correcto
-			    if (!message.message_thread_id) {
-			        console.log("❌ Ignorando mensaje del canal general (sin tópico).");
-			        return;
-			    }
+			    //if (!message.message_thread_id) {
+			      //  console.log("❌ Ignorando mensaje del canal general (sin tópico).");
+			        //return;
+			    //}
 
-			const allowedTopics = [4, 86]; // Lista de IDs de temas permitidos
+			//const allowedTopics = [4, 86]; // Lista de IDs de temas permitidos
 
-			if (!allowedTopics.includes(message.message_thread_id)) {
-			    console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${allowedTopics.join(", ")}`);
-			    return;
-			}
+			//if (!allowedTopics.includes(message.message_thread_id)) {
+			 //   console.log(`❌ Ignorando mensaje de tópico ${message.message_thread_id}, solo permitimos ${allowedTopics.join(", ")}`);
+			   // return;
+			//}
 			
-			console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
-			return next();
+			//console.log(`✅ Mensaje del tópico correcto (${message.message_thread_id}), enviando a Discord.`);
+			//return next();
 
 
 				
