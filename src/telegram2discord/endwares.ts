@@ -262,8 +262,18 @@ interface PreparedFile {
     link: string;
     name?: string;
 }
+
+// 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar fotos de este tema)
+const SENALES_BOT_THREAD_ID = 4;
+
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
+
+    // 🚨 **EVITAR ENVÍO SI ES DEL TEMA 4 (Señales Bot)**
+    if (ctx.tediCross.message?.message_thread_id === SENALES_BOT_THREAD_ID) {
+        console.log("⚠️ Imagen recibida en el tema 'Señales Bot'. NO se enviará a Discord.");
+        return;
+    }
 
     // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
     ctx.tediCross.alreadyProcessed = false;
