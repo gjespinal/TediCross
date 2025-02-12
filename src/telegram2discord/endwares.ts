@@ -267,6 +267,7 @@ interface PreparedFile {
 
 // 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar mensajes con imágenes de este tema)
 // 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar mensajes con imágenes de este tema)
+// 🔥 ID del tema de Telegram que representa "Señales Bot" (NO se deben enviar mensajes con imágenes de este tema)
 const SENALES_BOT_THREAD_ID = 4;
 
 export const relayMessage = async (ctx: TediCrossContext) => {
@@ -275,12 +276,20 @@ export const relayMessage = async (ctx: TediCrossContext) => {
     // Extraer el mensaje antes del formateo
     let rawText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
 
-    // Eliminar nombres de usuario si aparecen solos en una línea
-    rawText = rawText.replace(/^\s*\S+\s*$/gm, "").trim();
-
     // Extraer el nombre de la moneda antes del formateo
     let matchCoin = rawText.match(/#(\w+\/\w+)/);
-    let coinName = matchCoin ? matchCoin[1] : null;
+    let coinName = matchCoin ? matchCoin[1] : "";
+
+    // Limpiar el mensaje eliminando hashtags y usuarios
+    rawText = rawText
+        .replace(/#(\w+\/\w+)/g, "") // Elimina la moneda del mensaje para evitar duplicación
+        .replace(/@crypto_musk1/gi, "") // Elimina nombres de usuario
+        .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
+        .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
+        .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
+        .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
+        .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
+        .replace(/🔵 Long/gi, ""); // 🔥 Elimina el texto duplicado "Long"
 
     // 📂 **OBTENER ARCHIVOS ADJUNTOS**
     let files: PreparedFile[] = ctx.tediCross.prepared
@@ -352,23 +361,13 @@ export const relayMessage = async (ctx: TediCrossContext) => {
             const isLong = /🟢 LONG/i.test(rawText);
             const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo para Short, Verde para Long, Azul por defecto
 
-            // Formatear el mensaje
-            let formattedText = rawText
-                .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
-                .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
-                .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
-                .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
-                .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
-                .replace(/@crypto_musk1/gi, "")  // Elimina "@crypto_musk1"
-                .replace(/🔵 Long/gi, ""); // 🔥 Elimina el texto duplicado "Long"
-
-            // Si la moneda no se detectó en el mensaje, poner "Sin Identificar"
-            const formattedCoinName = coinName ? `💰 **\`${coinName}\`** 💰` : "💰 **Sin Identificar** 💰";
+            // Si la moneda no se detectó en el mensaje, omitir "Sin Identificar"
+            const formattedCoinName = coinName ? `💰 **\`${coinName}\`** 💰` : "";
 
             // Crear el embed
             const embed = new EmbedBuilder()
                 .setTitle(`📢 Alerta de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
-                .setDescription(`${formattedCoinName}\n\n${formattedText}`)
+                .setDescription(`${formattedCoinName}\n\n${rawText}`)
                 .setColor(embedColor)
                 .setTimestamp();
 
@@ -416,8 +415,6 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
     }
 };
-
-
 
 
 
