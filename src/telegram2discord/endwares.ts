@@ -260,6 +260,12 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
  */
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log(`🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: ${ctx.tediCross.message?.message_thread_id})`);
+if (ctx.tediCross.alreadyProcessed) {
+    console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
+    return;
+}
+
+ctx.tediCross.alreadyProcessed = true; // ✅ Marcar el mensaje como procesado
 
     // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
     ctx.tediCross.alreadyProcessed = false;
@@ -284,10 +290,27 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         // 📨 **PREPARAR MENSAJE**
         const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
       //  const files = ctx.tediCross.prepared.map((prepared: any) => prepared.file).filter((file: any) => file);
-	const files = ctx.tediCross.prepared
-	    .map((prepared: any) => prepared.file)
-	    .filter((file: any) => file);
-	
+	//const files = ctx.tediCross.prepared
+	   // .map((prepared: any) => prepared.file)
+	   // .filter((file: any) => file);
+
+const files = ctx.tediCross.prepared
+    .map((prepared: any) => prepared.file)
+    .filter((file: any) => file && file.link) // Filtrar archivos no válidos
+    .reduce((uniqueFiles: any[], file: any) => {
+        // Evita duplicados verificando si el link ya está en la lista
+        if (!uniqueFiles.some(existingFile => existingFile.attachment === file.link)) {
+            uniqueFiles.push({ attachment: file.link, name: file.name || "file.jpg" });
+        }
+        return uniqueFiles;
+    }, []);
+
+
+	    
+	    console.log("📂 Archivos adjuntos listos para enviar (sin duplicados):", files);
+
+
+	    
 	console.log("🛠️ Revisando archivos adjuntos desde Telegram:", files);
 
         console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
