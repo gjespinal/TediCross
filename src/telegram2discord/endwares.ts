@@ -15,26 +15,28 @@ interface DiscordMessage {
 }
 
 export interface TediCrossContext extends Context {
-	TediCross: any;
-	tediCross: {
-		message: Message | any;
-		file: {
-			type: string;
-			id: string;
-			name: string;
-			link?: string;
-		};
-		messageId: string;
-		prepared: any;
-		bridges: any;
-		replyTo: any;
-		text: any;
-		forwardFrom: any;
-		from: any;
-		hasActualReference: boolean;
-		hasMediaGroup?: boolean;
-	};
+    TediCross: any;
+    tediCross: {
+        message: Message | any;
+        file: {
+            type: string;
+            id: string;
+            name: string;
+            link?: string;
+        };
+        messageId: string;
+        prepared: any;
+        bridges: any;
+        replyTo: any;
+        text: any;
+        forwardFrom: any;
+        from: any;
+        hasActualReference: boolean;
+        hasMediaGroup?: boolean;
+        discordChannelId?: string;  // ✅ Agregar esta línea
+    };
 }
+
 
 /***********
  * Helpers *
