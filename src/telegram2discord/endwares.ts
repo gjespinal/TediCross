@@ -261,12 +261,15 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
 export const relayMessage = (ctx: TediCrossContext) => {
     console.log(`🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: ${ctx.tediCross.message?.message_thread_id})`);
 
-    // ✅ Evitar duplicaciones (PERO NO MARCARLO AÚN)
+    // ✅ Verificar si el mensaje ya fue procesado
     if (ctx.tediCross.alreadyProcessed) {
         console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
         return;
     }
 
+    // ✅ NO MARCAR `alreadyProcessed` todavía, esperar al envío exitoso
+
+    // 🟢 Manejo de Media Groups (si hay imágenes/videos en grupo)
     if (ctx.tediCross.message?.media_group_id) {
         if (!ctx.tediCross.hasMediaGroup) {
             parseMediaGroup(ctx);
@@ -277,7 +280,7 @@ export const relayMessage = (ctx: TediCrossContext) => {
 
     R.forEach(async (prepared: any) => {
         try {
-            // ✅ Verificar que el bot está listo
+            // ✅ Verificar que el bot de Discord está listo
             await ctx.TediCross.dcBot.ready;
             console.log("✅ Discord bot está listo, buscando canal...");
 
@@ -293,15 +296,16 @@ export const relayMessage = (ctx: TediCrossContext) => {
                 return;
             }
 
-            // 🔥 Enviar mensaje a Discord
+            // 🟢 Enviar mensaje a Discord
             const messageText = prepared.header + "\n" + prepared.text;
             console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
 
             const sentMessage = await channel.send(messageText);
             console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
 
-            // ✅ SOLO AHORA marcar el mensaje como procesado
+            // ✅ AHORA marcar el mensaje como procesado (después del envío exitoso)
             ctx.tediCross.alreadyProcessed = true;
+            console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
 
         } catch (err: any) {
             console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
