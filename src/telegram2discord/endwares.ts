@@ -274,9 +274,9 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 const formatMessage = (text: string): string => {
     return text
         .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números sin encerrar todo el mensaje
-        .replace(/Entry:/gi, "**Entrada:**")  // Traducir Entry a Entrada
-        .replace(/Targets:/gi, "**Objetivos:**")  // Traducir Targets a Objetivos
-        .replace(/Leverage:/gi, "**Apalancamiento:**")  // Traducir Leverage a Apalancamiento
+        .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
+        .replace(/\bTargets\b/gi, "**Objetivos**")  // Traducir Targets a Objetivos
+        .replace(/\bLeverage\b/gi, "**Apalancamiento**")  // Traducir Leverage a Apalancamiento
         .replace(/\(isolated\)/gi, "(aislado)")  // Traducir (isolated) a (aislado)
         .replace(/@crypto_musk1/gi, "");  // Elimina "@crypto_musk1"
 };
