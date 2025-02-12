@@ -259,7 +259,7 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
  * @param ctx.TediCross	The global TediCross context of the message
  */
 export const relayMessage = async (ctx: TediCrossContext) => {
-    console.log(🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: ${ctx.tediCross.message?.message_thread_id}));
+    console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
 
     // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
     ctx.tediCross.alreadyProcessed = false;
@@ -279,33 +279,34 @@ export const relayMessage = async (ctx: TediCrossContext) => {
             return;
         }
 
-        console.log(✅ Canal de Discord obtenido: ${channel.id});
+        console.log("✅ Canal de Discord obtenido: " + channel.id);
 
         // 📨 **PREPARAR MENSAJE**
-        const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
+        const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
         const files = ctx.tediCross.prepared.map((prepared: any) => prepared.file).filter((file: any) => file);
 
-        console.log(📨 Enviando mensaje a Discord: ${messageText});
+        console.log("📨 Enviando mensaje a Discord: " + messageText);
 
         // ✅ **ENVIAR MENSAJE CON ARCHIVOS SI EXISTEN**
-        const sendOptions: any = { content: messageText };
+        const sendOptions: any = { content: messageText || "Mensaje vacío" };
 
         if (files.length > 0) {
-            console.log(📂 Enviando ${files.length} archivo(s) adjunto(s));
+            console.log("📂 Enviando " + files.length + " archivo(s) adjunto(s)");
             sendOptions.files = files.map((file: any) => ({ attachment: file.link, name: file.name }));
         }
 
         const sentMessage = await channel.send(sendOptions);
-        console.log(✅ Mensaje enviado a Discord con ID: ${sentMessage.id});
+        console.log("✅ Mensaje enviado a Discord con ID: " + sentMessage.id);
 
         // 🚀 **MARCAR COMO PROCESADO SOLO DESPUÉS DE ENVIAR**
         ctx.tediCross.alreadyProcessed = true;
-        console.log(✅ Mensaje marcado como procesado para evitar duplicación.);
+        console.log("✅ Mensaje marcado como procesado para evitar duplicación.");
     
     } catch (err: any) {
-        console.error(❌ ERROR al enviar mensaje a Discord: ${err.message});
+        console.error("❌ ERROR al enviar mensaje a Discord: " + err.message);
     }
 };
+
 
 
 
