@@ -269,6 +269,12 @@ const SENALES_BOT_THREAD_ID = 4;
 
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
+   // Extraer el mensaje antes del formateo
+    const rawText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
+
+    // Extraer el nombre de la moneda antes del formateo
+    const matchCoin = rawText.match(/#(\w+\/\w+)/);
+    const coinName = matchCoin ? matchCoin[1] : "Sin Identificar";
 
 // ✅ **PREPARAR MENSAJE DE TEXTO**
   //  const messageText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "").trim();
@@ -365,7 +371,7 @@ const embedColor = isShort ? 0xFF0000 : isLong ? 0x00FF00 : 0x3498DB; // Rojo pa
 
 // Crear el embed
 const embed = new EmbedBuilder()
-    .setTitle(`📢 Señal de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
+    .setTitle(`📢 Alerta de Trading: ${isShort ? "🔴 SHORT" : isLong ? "🟢 LONG" : "📊"}`)
     .setDescription(
                 `💰 **\`${coinName}\`** 💰\n\n` +
                 messageText
@@ -392,10 +398,6 @@ if (!ctx.tediCross.alreadyProcessed) {
 } else {
     console.log("⚠️ Mensaje ya procesado previamente, evitando duplicación.");
 }
-
-
-
-
 
 	    
         if (files.length > 0) {
