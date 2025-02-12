@@ -260,15 +260,13 @@ const parseMediaGroup = (ctx: TediCrossContext, byTimer: boolean = false) => {
  */
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log(`🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: ${ctx.tediCross.message?.message_thread_id})`);
-if (ctx.tediCross.alreadyProcessed) {
-    console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
-    return;
-}
 
-ctx.tediCross.alreadyProcessed = true; // ✅ Marcar el mensaje como procesado
-
-    // 🚨 **REINICIAR FLAG DE PROCESAMIENTO**
-    ctx.tediCross.alreadyProcessed = false;
+    // Evitar procesar el mismo mensaje más de una vez
+    if (ctx.tediCross.alreadyProcessed) {
+        console.log("⏭️ Mensaje ya fue procesado anteriormente, ignorando...");
+        return;
+    }
+    ctx.tediCross.alreadyProcessed = true;
 
     try {
         // ✅ Verificar que el bot de Discord está listo
@@ -287,111 +285,43 @@ ctx.tediCross.alreadyProcessed = true; // ✅ Marcar el mensaje como procesado
 
         console.log(`✅ Canal de Discord obtenido: ${channel.id}`);
 
-  //      // 📨 **PREPARAR MENSAJE**
-  //      const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
-      //  const files = ctx.tediCross.prepared.map((prepared: any) => prepared.file).filter((file: any) => file);
-	//const files = ctx.tediCross.prepared
-	   // .map((prepared: any) => prepared.file)
-	   // .filter((file: any) => file);
-
-// 🛠️ Filtrar imágenes duplicadas antes de enviarlas a Discord
-//const files = ctx.tediCross.prepared
-//    .map((prepared: any) => prepared.file)  // Extraer archivos
-//    .filter((file: any) => file && file.link) // Asegurar que tiene un enlace válido
-//    .reduce((uniqueFiles: any[], file: any) => {
-  //      if (!uniqueFiles.some(existingFile => existingFile.attachment === file.link)) {
-    //        uniqueFiles.push({ attachment: file.link, name: file.name || "file.jpg" });
-  //      }
-  //      return uniqueFiles;
- //   }, []);
-
-//if (files.length > 0) {
-  //  console.log(`📂 Enviando ${files.length} archivo(s) adjunto(s)`);
-   // sendOptions.files = files;
-//}
-
-// 📨 **PREPARAR MENSAJE**
-const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
-
-// 🔹 **Declarar `sendOptions` antes de usarlo**
-const sendOptions: any = { content: messageText };
-
-// 🛠️ **Filtrar imágenes duplicadas antes de enviarlas a Discord**
-const files = ctx.tediCross.prepared
-    .map((prepared: any) => prepared.file)  // Extraer archivos
-    .filter((file: any) => file && file.link) // Asegurar que tiene un enlace válido
-    .reduce((uniqueFiles: any[], file: any) => {
-        if (!uniqueFiles.some(existingFile => existingFile.attachment === file.link)) {
-            uniqueFiles.push({ attachment: file.link, name: file.name || "file.jpg" });
-        }
-        return uniqueFiles;
-    }, []);
-
-if (files.length > 0) {
-    console.log(`📂 Enviando ${files.length} archivo(s) adjunto(s)`);
-    sendOptions.files = files;
-}
-
-// ✅ **ENVIAR MENSAJE A DISCORD**
-const sentMessage = await channel.send(sendOptions);
-console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
-
-
-
-
-	    
-	    
-	    //console.log("📂 Archivos adjuntos listos para enviar (sin duplicados):", files);
-
-
-	    
-	//console.log("🛠️ Revisando archivos adjuntos desde Telegram:", files);
-
-       // console.log(`📨 Enviando mensaje a Discord: ${messageText}`);
-
-        // ✅ **ENVIAR MENSAJE CON ARCHIVOS SI EXISTEN**
+        // 📨 **PREPARAR MENSAJE**
+        const messageText = ctx.tediCross.prepared[0]?.header + "\n" + ctx.tediCross.prepared[0]?.text;
         const sendOptions: any = { content: messageText };
 
-      //  if (files.length > 0) {
-         //   console.log(`📂 Enviando ${files.length} archivo(s) adjunto(s)`);
-          //  sendOptions.files = files.map((file: any) => ({ attachment: file.link, name: file.name }));
-     //   }
+        // 🛠️ **Filtrar imágenes duplicadas antes de enviarlas a Discord**
+        const files = ctx.tediCross.prepared
+            .map((prepared: any) => prepared.file)  // Extraer archivos
+            .filter((file: any) => file && file.link) // Asegurar que tiene un enlace válido
+            .reduce((uniqueFiles: any[], file: any) => {
+                if (!uniqueFiles.some(existingFile => existingFile.attachment === file.link)) {
+                    uniqueFiles.push({ attachment: file.link, name: file.name || "file.jpg" });
+                }
+                return uniqueFiles;
+            }, []);
 
-	if (Array.isArray(files) && files.length > 0) {
-	    console.log("📂 Archivos adjuntos listos para enviar:", files);
-	
-	    sendOptions.files = files.map(file => {
-	        if (typeof file.link === 'string') {
-	            return { attachment: file.link, name: file.name || "file" };
-	        }
-	        return file;  // Si ya está en el formato correcto
-	    });
+        if (files.length > 0) {
+            console.log(`📂 Enviando ${files.length} archivo(s) adjunto(s)`);
+            sendOptions.files = files;
+        }
 
-} else {
-    console.log("⚠️ No hay archivos adjuntos disponibles o formato incorrecto.");
-}
-
-	    let sentMessage;
-
-try {
-    console.log("📨 Intentando enviar mensaje a Discord...");
-    sentMessage = await channel.send(sendOptions);
-    console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
-} catch (err: any) {
-    console.error("❌ ERROR al enviar mensaje con archivos a Discord:", err);
-    
-    // Si fallan los archivos, intentar enviar solo el texto
-    if (sendOptions.files) {
-        delete sendOptions.files;
-        console.log("🔄 Intentando enviar solo el mensaje de texto sin archivos...");
-        sentMessage = await channel.send(sendOptions);
-        console.log(`✅ Mensaje sin archivos enviado a Discord con ID: ${sentMessage.id}`);
-    }
-}
-
-
-        //const sentMessage = await channel.send(sendOptions);
-       // console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
+        // ✅ **ENVIAR MENSAJE A DISCORD**
+        let sentMessage;
+        try {
+            console.log("📨 Intentando enviar mensaje a Discord...");
+            sentMessage = await channel.send(sendOptions);
+            console.log(`✅ Mensaje enviado a Discord con ID: ${sentMessage.id}`);
+        } catch (err: any) {
+            console.error("❌ ERROR al enviar mensaje con archivos a Discord:", err);
+            
+            // Si fallan los archivos, intentar enviar solo el texto
+            if (sendOptions.files) {
+                delete sendOptions.files;
+                console.log("🔄 Intentando enviar solo el mensaje de texto sin archivos...");
+                sentMessage = await channel.send(sendOptions);
+                console.log(`✅ Mensaje sin archivos enviado a Discord con ID: ${sentMessage.id}`);
+            }
+        }
 
         // 🚀 **MARCAR COMO PROCESADO SOLO DESPUÉS DE ENVIAR**
         ctx.tediCross.alreadyProcessed = true;
@@ -401,10 +331,6 @@ try {
         console.error(`❌ ERROR al enviar mensaje a Discord: ${err.message}`);
     }
 };
-
-
-
-
 
 
 /**
