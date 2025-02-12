@@ -7,6 +7,7 @@ import { deleteMessage, ignoreAlreadyDeletedError } from "./helpers";
 import { createFromObjFromUser } from "./From";
 import { MessageEditOptions, EmbedBuilder } from "discord.js";
 import { Message, User } from "telegraf/typings/core/types/typegram";
+import { EmbedBuilder } from "discord.js"; // Asegúrate de importar esto
 
 interface DiscordMessage {
 	embeds?: any[];
@@ -351,7 +352,7 @@ const messageText = formatMessage(
 
         // ✅ **CREAR OBJETO DE ENVÍO**
        // const sendOptions: any = { content: messageText || "Mensaje vacío" };
-import { EmbedBuilder } from "discord.js"; // Asegúrate de importar esto
+
 
 // Determinar el color del embed basado en si es LONG o SHORT
 const isShort = /🔴 SHORT/i.test(messageText);
