@@ -272,6 +272,9 @@ const SENALES_BOT_THREAD_ID = 4;
 
 export const relayMessage = async (ctx: TediCrossContext) => {
     console.log("🔄 relayMessage ejecutado para mensaje en Telegram (Tópico: " + ctx.tediCross.message?.message_thread_id + ")");
+    
+    // Extraer el usuario del mensaje en Telegram
+    const userName = ctx.tediCross.message.from?.username || ctx.tediCross.message.from?.first_name || "Usuario Desconocido";
 
     // Extraer el mensaje antes del formateo
     let rawText = (ctx.tediCross.prepared[0]?.header || "") + "\n" + (ctx.tediCross.prepared[0]?.text || "");
@@ -282,6 +285,7 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
     // Limpiar el mensaje eliminando hashtags y usuarios
     rawText = rawText
+	.replace(new RegExp(userName, "gi"), "") // Elimina el nombre del usuario
         .replace(/#(\w+\/\w+)/g, "") // Elimina la moneda del mensaje para evitar duplicación
         .replace(/@crypto_musk1/gi, "") // Elimina nombres de usuario
         .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
