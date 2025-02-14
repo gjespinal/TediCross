@@ -17,7 +17,7 @@ discord:
   skipOldMessages: true
   replyLength: 100
   maxReplyLines: 2
-  suppressThisIsPrivateBotMessage: false
+  suppressThisIsPrivateBotMessage: true
   enableCustomStatus: false
   customStatusMessage: "TediCross"
 
