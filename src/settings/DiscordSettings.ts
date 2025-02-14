@@ -149,7 +149,7 @@ export class DiscordSettings {
 			token: DiscordSettings.GET_TOKEN_FROM_ENVIRONMENT,
 			skipOldMessages: true,
 			useNickname: false,
-			suppressThisIsPrivateBotMessage: false,
+			suppressThisIsPrivateBotMessage: true,
 			enableCustomStatus: false,
 			customStatusMessage: "TediCross",
 			disableWebPreviewOnTelegram: false,
