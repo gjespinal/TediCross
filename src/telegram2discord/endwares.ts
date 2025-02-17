@@ -285,7 +285,13 @@ export const relayMessage = async (ctx: TediCrossContext) => {
 
     // Limpiar el mensaje eliminando hashtags y usuarios
     rawText = rawText
-	.replace(new RegExp(userName, "gi"), "") // Elimina el nombre del usuario
+	//.replace(new RegExp(userName, "gi"), "") // Elimina el nombre del usuario
+	    // Verificar si el mensaje proviene del Tema 4 de Telegram
+if (ctx.tediCross.message?.message_thread_id === SENALES_BOT_THREAD_ID) {
+    rawText = rawText.replace(new RegExp(userName, "gi"), ""); // 🔥 Eliminar solo en el tema 4
+} else {
+    rawText = `${userName}: ` + rawText; // 🔥 Mantener el nombre en otros temas
+}
         .replace(/#(\w+\/\w+)/g, "") // Elimina la moneda del mensaje para evitar duplicación
         .replace(/@crypto_musk1/gi, "") // Elimina nombres de usuario
         .replace(/\bEntry\b/gi, "**Entrada**")  // Traducir Entry a Entrada
@@ -295,6 +301,10 @@ export const relayMessage = async (ctx: TediCrossContext) => {
         .replace(/\b(\d+\.\d+)\b/g, "`$1`")  // Resalta solo los números
         .replace(/🔵 Long/gi, ""); // 🔥 Elimina el texto duplicado "Long"
 
+
+
+
+	
     // 📂 **OBTENER ARCHIVOS ADJUNTOS**
     let files: PreparedFile[] = ctx.tediCross.prepared
         .map((prepared: any) => prepared.file as PreparedFile)
