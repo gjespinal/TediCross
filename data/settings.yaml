@@ -34,7 +34,7 @@ bridges:
       sendUsernames: true
       crossDeleteOnDiscord: true
     discord:
-      channelId: '1337835179065999380'  # ✅ Debe estar en comillas
+      channelId: '1359309418352611419'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
