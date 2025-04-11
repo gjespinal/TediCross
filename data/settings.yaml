@@ -22,13 +22,13 @@ discord:
   customStatusMessage: "TediCross"
 
 bridges:
-  - name: "Crypto smart Signal"
+  - name: "Crypto smart SMART-NEWS"
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:
-      - telegram: 4  # ✅ Solo este tópico en Telegram
-        discord: '1337835179065999380'  # ✅ Canal/thread en Discord
+      - telegram: 39666  # ✅ Solo este tópico en Telegram
+        discord: '1359309418352611419'  # ✅ Canal/thread en Discord
     telegram:
-      chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
+      chatId: "1404751252"  # ✅ ID del grupo general en Telegram
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
@@ -41,19 +41,19 @@ bridges:
       crossDeleteOnTelegram: true
       disableWebPreviewOnTelegram: false
       useEmbeds: "auto"
-  - name: "Crypto smart New"
+  - name: "Crypto smart NOTICIAS"
     direction: both  # Puede ser "both", "tgToDc" o "dcToTg"
     threadMap:
-      - telegram: 86  # ✅ Solo este tópico en Telegram
-        discord: '1332314270318460969'  # ✅ Canal/thread en Discord
+      - telegram: 39205  # ✅ Solo este tópico en Telegram
+        discord: '1343059293183938637'  # ✅ Canal/thread en Discord
     telegram:
-      chatId: "-1002479265586"  # ✅ ID del grupo general en Telegram
+      chatId: "1404751252"  # ✅ ID del grupo general en Telegram
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
       crossDeleteOnDiscord: true
     discord:
-      channelId: '1332314270318460969'  # ✅ Debe estar en comillas
+      channelId: '1343059293183938637'  # ✅ Debe estar en comillas
       relayJoinMessages: false
       relayLeaveMessages: false
       sendUsernames: true
