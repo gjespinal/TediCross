@@ -245,7 +245,7 @@ tgBot.use((ctx: TediCrossContext, next: () => void) => {
     }
 
     const topicToDiscordChannel: Record<number, string> = {
-        4: "1337835179065999380",
+        4: "1343059293183938637",
         86: "1332314270318460969"
     };
 
